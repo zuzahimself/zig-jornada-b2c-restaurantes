@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude_ai_Figma__get_design_context",
+      "Bash(npm install 2>&1 | tail -5)",
+      "Bash(npx tsc --noEmit 2>&1)",
+      "Bash(npx vite build 2>&1 | tail -20)",
+      "Bash(lsof -i -P | grep -i listen | grep -E '\\(node|vite\\)' 2>/dev/null; ps aux | grep -E '\\(vite|dev\\)' | grep -v grep 2>/dev/null)",
+      "WebFetch(domain:www.figma.com)",
+      "Bash(find /Users/zuza/zig-jornada-b2c-restaurantes -maxdepth 2 \\\\\\( -name \"*.json\" -o -name \".claude*\" \\\\\\) -type f 2>/dev/null | grep -E \"\\\\.\\(json|claude\\)\" | head -20)",
+      "WebSearch",
+      "WebFetch(domain:developers.figma.com)",
+      "WebFetch(domain:github.com)",
+      "mcp__plugin_figma_figma__get_design_context"
+    ]
+  }
+}

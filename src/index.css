@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Brand defaults (overwritten by applyBrandToDOM) ────────────────────── */
+:root {
+  --color-brand-fill: #446A81;
+  --color-brand-fill-hover: #375869;
+  --color-brand-text: #375869;
+  --color-brand-subtle: #f0f4f6;
+  --color-brand-border: #b4cad5;
+  --color-on-brand-fill: #ffffff;
+  --color-text-primary: #0d1a20;
+  --color-text-secondary: #6B7280;
+  --color-text-tertiary: #9CA3AF;
+  --color-loyalty-gold: #D4A017;
+
+  --header-height: 64px;
+  --bottom-bar-height: 80px;
+  --category-nav-height: 96px;
+}
+
+/* ─── Smooth brand token transitions ─────────────────────────────────────── */
+/* Only transition color-related properties so Framer Motion (transform/opacity) is unaffected */
+@media (prefers-reduced-motion: no-preference) {
+  *,
+  *::before,
+  *::after {
+    transition-property: background-color, color, border-color, fill, stroke;
+    transition-duration: 300ms;
+    transition-timing-function: ease;
+  }
+}
+
+/* ─── Scrollbar hiding ────────────────────────────────────────────────────── */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ─── 3D perspective for carousel ────────────────────────────────────────── */
+.perspective-1200 {
+  perspective: 1200px;
+}
+
+/* ─── Glassmorphism badge ─────────────────────────────────────────────────── */
+.glass-badge {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ─── Hairline border ─────────────────────────────────────────────────────── */
+.border-hairline {
+  border-bottom: 1px solid #ececee;
+}
+
+/* ─── Safe area for notch phones ─────────────────────────────────────────── */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ─── Skeleton shimmer ────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+/* ─── Mobile-first viewport ──────────────────────────────────────────────── */
+html, body {
+  height: 100%;
+  overscroll-behavior: none;
+}
+
+#root {
+  height: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  background: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+body {
+  background: #111;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
