@@ -18,7 +18,7 @@ interface UpsellSheetProps {
 
 export function UpsellSheet({ isOpen, excludeItemId, onClose, onViewCart }: UpsellSheetProps) {
   const navigate = useNavigate()
-  const { addItem } = useCart()
+  const { addItem, itemCount, totalCents } = useCart()
   const { tokens } = useBrand()
   const brandFill = tokens['--color-brand-fill']
   const buttonText = getTextOnBackground(brandFill)
@@ -127,10 +127,17 @@ export function UpsellSheet({ isOpen, excludeItemId, onClose, onViewCart }: Upse
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={handleViewCart}
-                className="w-full py-3 rounded-xl text-sm font-bold"
+                className="w-full py-3 px-4 rounded-pill flex items-center justify-between"
                 style={{ backgroundColor: brandFill, color: buttonText }}
               >
-                Ver meu pedido
+                <span
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.25)', color: buttonText }}
+                >
+                  {String(itemCount).padStart(2, '0')}
+                </span>
+                <span className="text-base font-bold font-display">Ver pedido</span>
+                <span className="text-sm font-semibold shrink-0">R${formatPrice(totalCents)}</span>
               </motion.button>
               <button
                 onClick={handleContinue}

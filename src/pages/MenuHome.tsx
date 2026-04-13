@@ -11,6 +11,7 @@ import { CartSheet } from '../components/CartSheet'
 import { FlyingCartItem } from '../components/FlyingCartItem'
 import { UpsellSheet } from '../components/UpsellSheet'
 import { WelcomeBanner } from '../components/WelcomeBanner'
+import { SearchOverlay } from '../components/SearchOverlay'
 import { bannerItems, categories, menuItems, suggestionItems } from '../data/menuData'
 import { useCart } from '../context/CartContext'
 import { useBrand } from '../context/BrandContext'
@@ -25,6 +26,7 @@ export function MenuHome() {
   const { totalCents, itemCount, openCartAfterAdd, setOpenCartAfterAdd, lastAddedImage, clearLastAdded } = useCart()
   const { scale } = useBrand()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
   const [cartSheetOpen, setCartSheetOpen] = useState(false)
   const [showUpsell, setShowUpsell] = useState(false)
   const [flyingImage, setFlyingImage] = useState<string | null>(null)
@@ -106,14 +108,19 @@ export function MenuHome() {
     }
   }, [openCartAfterAdd, setOpenCartAfterAdd])
 
+  // Open cart sheet when arriving with ?openCart=1 (e.g. after login)
+  const openCartOnMount = useRef(
+    typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('openCart')
+  )
   useEffect(() => {
-    if (searchParams.get('openCart')) {
-      searchParams.delete('openCart')
-      setSearchParams(searchParams, { replace: true })
-      const t = setTimeout(() => setCartSheetOpen(true), 200)
-      return () => clearTimeout(t)
+    if (openCartOnMount.current) {
+      openCartOnMount.current = false
+      const params = new URLSearchParams(searchParams)
+      params.delete('openCart')
+      setSearchParams(params, { replace: true })
+      setTimeout(() => setCartSheetOpen(true), 300)
     }
-  }, [searchParams, setSearchParams])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleFlyComplete = useCallback(() => {
     setFlyingImage(null)
@@ -222,6 +229,7 @@ export function MenuHome() {
         {/* ── Header ── */}
         <Header
           onMenuOpen={() => setMenuOpen(true)}
+          onSearchOpen={() => setSearchOpen(true)}
           tableNumber={12}
           scrolled={scrolled}
           heroMode={!heroSeen}
@@ -370,6 +378,21 @@ export function MenuHome() {
         }}
       />
       <WelcomeBanner />
+      <SearchOverlay
+        isOpen={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onCategorySelect={(id) => {
+          setActiveCategory(id)
+          setActiveSubcategory(null)
+          // Scroll past the banner so the user sees the category nav + products
+          setTimeout(() => {
+            const el = mainRef.current
+            if (!el) return
+            const target = heroSeen ? 300 : wrapperHeight + 50
+            el.scrollTo({ top: target, behavior: 'smooth' })
+          }, 100)
+        }}
+      />
     </motion.div>
   )
 }

@@ -101,12 +101,12 @@ export function Payment() {
       {/* Header */}
       <div
         className="flex items-center gap-3 px-4 shrink-0"
-        style={{ backgroundColor: 'var(--color-brand-fill)', height: 'var(--header-height)' }}
+        style={{ backgroundColor: 'var(--color-brand-subtle)', height: 'var(--header-height)' }}
       >
-        <button onClick={() => navigate(-1)} className="text-on-brand">
+        <button onClick={() => navigate(-1)} className="text-brand-text">
           <ArrowLeft size={20} />
         </button>
-        <span className="text-sm font-bold text-on-brand">Pagamento</span>
+        <span className="text-sm font-bold text-brand-text">Pagamento</span>
       </div>
 
       {/* Content */}

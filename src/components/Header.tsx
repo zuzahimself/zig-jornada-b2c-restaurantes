@@ -6,24 +6,27 @@ import { useAuth } from '../context/AuthContext'
 
 interface HeaderProps {
   onMenuOpen: () => void
+  onSearchOpen?: () => void
   tableNumber?: number
   scrolled?: boolean
   heroMode?: boolean
   onHeightChange?: (h: number) => void
 }
 
-export function Header({ onMenuOpen, tableNumber = 12, scrolled = false, heroMode = false, onHeightChange }: HeaderProps) {
-  const { tokens, textOnBrand, scale } = useBrand()
+export function Header({ onMenuOpen, onSearchOpen, tableNumber = 12, scrolled = false, heroMode = false, onHeightChange }: HeaderProps) {
+  const { tokens, scale } = useBrand()
   const { user, isAuthenticated } = useAuth()
   const fill = tokens['--color-brand-fill']
   const brandTextColor = tokens['--color-brand-text']
+  const subtle = tokens['--color-brand-subtle']
   const headerRef = useRef<HTMLElement>(null)
 
   const initials = isAuthenticated && user
     ? user.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
     : ''
 
-  const bgStyle = scrolled ? fill : 'transparent'
+  // Glass effect when scrolled
+  const bgStyle = scrolled ? `color-mix(in srgb, ${subtle} 80%, transparent)` : 'transparent'
 
   useEffect(() => {
     const el = headerRef.current
@@ -36,8 +39,12 @@ export function Header({ onMenuOpen, tableNumber = 12, scrolled = false, heroMod
   return (
     <header
       ref={headerRef}
-      className="sticky top-0 z-50 px-4 py-2 select-none transition-colors duration-300"
-      style={{ backgroundColor: bgStyle }}
+      className="sticky top-0 z-50 px-4 py-2 select-none transition-all duration-300"
+      style={{
+        backgroundColor: bgStyle,
+        backdropFilter: scrolled ? 'blur(16px) saturate(1.4)' : 'none',
+        WebkitBackdropFilter: scrolled ? 'blur(16px) saturate(1.4)' : 'none',
+      }}
     >
       {/* Row 1: Logo + Mesa pill */}
       <div className="flex items-center justify-between mb-2">
@@ -45,15 +52,14 @@ export function Header({ onMenuOpen, tableNumber = 12, scrolled = false, heroMod
           src="/logo-mana.png"
           alt="Mana"
           className="h-6 object-contain"
-          style={{ filter: scrolled ? 'brightness(0) invert(1)' : 'none' }}
         />
 
         <Link
           to="/conta-mesa"
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-sm font-semibold no-underline"
           style={{
-            backgroundColor: scrolled ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.85)',
-            color: scrolled ? textOnBrand : brandTextColor,
+            backgroundColor: scrolled ? 'white' : 'rgba(255,255,255,0.85)',
+            color: brandTextColor,
           }}
         >
           <span
@@ -72,20 +78,18 @@ export function Header({ onMenuOpen, tableNumber = 12, scrolled = false, heroMod
           pointerEvents: (!heroMode || scrolled) ? 'auto' : 'none',
         }}
       >
-        <div
-          className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl"
+        <button
+          onClick={onSearchOpen}
+          className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl text-left"
           style={{
-            backgroundColor: scrolled ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.85)',
+            backgroundColor: scrolled ? 'white' : 'rgba(255,255,255,0.85)',
           }}
         >
-          <Search size={18} color={scrolled ? textOnBrand : scale[400]} strokeWidth={2} />
-          <span
-            className="text-sm"
-            style={{ color: scrolled ? 'rgba(255,255,255,0.6)' : scale[400] }}
-          >
+          <Search size={18} color={scale[400]} strokeWidth={2} />
+          <span className="text-sm" style={{ color: scale[400] }}>
             Buscar categoria ou prato...
           </span>
-        </div>
+        </button>
 
         {isAuthenticated ? (
           <button
@@ -93,8 +97,8 @@ export function Header({ onMenuOpen, tableNumber = 12, scrolled = false, heroMod
             onClick={onMenuOpen}
             className="w-11 h-11 shrink-0 flex items-center justify-center rounded-full text-xs font-bold transition-colors"
             style={{
-              backgroundColor: scrolled ? 'rgba(255,255,255,0.2)' : fill,
-              color: scrolled ? textOnBrand : tokens['--color-on-brand-fill'],
+              backgroundColor: fill,
+              color: tokens['--color-on-brand-fill'],
             }}
           >
             {initials}
@@ -105,11 +109,11 @@ export function Header({ onMenuOpen, tableNumber = 12, scrolled = false, heroMod
             onClick={onMenuOpen}
             className="w-11 h-11 shrink-0 flex items-center justify-center rounded-full border transition-colors"
             style={{
-              borderColor: scrolled ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.1)',
-              backgroundColor: scrolled ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.85)',
+              borderColor: 'rgba(0,0,0,0.1)',
+              backgroundColor: scrolled ? 'white' : 'rgba(255,255,255,0.85)',
             }}
           >
-            <Menu size={20} color={scrolled ? textOnBrand : fill} strokeWidth={2} />
+            <Menu size={20} color={fill} strokeWidth={2} />
           </button>
         )}
       </div>

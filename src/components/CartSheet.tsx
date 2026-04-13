@@ -143,10 +143,19 @@ export function CartSheet({ isOpen, onClose }: CartSheetProps) {
                       onClose()
                       navigate('/sucesso')
                     }}
-                    className="w-full py-3.5 rounded-xl text-sm font-bold"
+                    className="w-full py-3 px-4 rounded-pill flex items-center justify-between relative overflow-hidden"
                     style={{ backgroundColor: brandFill, color: buttonText }}
                   >
-                    Enviar pedido · R$ {formatPrice(grandTotal)}
+                    {/* Shimmer effect */}
+                    <span className="shimmer-btn absolute inset-0 pointer-events-none" />
+                    <span
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 relative"
+                      style={{ backgroundColor: 'rgba(255,255,255,0.25)', color: buttonText }}
+                    >
+                      {String(itemCount).padStart(2, '0')}
+                    </span>
+                    <span className="text-base font-bold font-display relative">Enviar pedido</span>
+                    <span className="text-sm font-semibold shrink-0 relative">R${formatPrice(grandTotal)}</span>
                   </motion.button>
                 </div>
               </>

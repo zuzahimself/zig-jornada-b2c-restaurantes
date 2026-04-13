@@ -1,5 +1,5 @@
-import { ChevronRight, ShoppingBag, Receipt, Coins } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { ChevronRight, Coins } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useMock } from '../context/MockContext'
@@ -14,86 +14,80 @@ interface BottomBarProps {
 export function BottomBar({ itemCount, totalCents, onViewOrder }: BottomBarProps) {
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
-  const { giftbackBalance } = useMock()
+  const { giftbackBalance, tableOrders } = useMock()
   const hasItems = itemCount > 0
+  const hasTableOrders = tableOrders.length > 0
+
+  // Hide completely when nothing in cart and nothing on the table
+  if (!hasItems && !hasTableOrders) return null
 
   return (
     <div
       className="sticky bottom-0 z-50 bg-white pb-safe"
       style={{ boxShadow: '0 -1px 0 0 #ececee, 0 -4px 16px 0 rgba(0,0,0,0.06)' }}
     >
-      {/* Promo strip — conditional */}
-      {!isAuthenticated ? (
-        <button
-          onClick={() => navigate('/login')}
-          className="w-full flex items-center justify-between px-4 py-2 border-b border-border hover:bg-surface-low transition-colors"
-        >
-          <span className="text-xs text-txt-secondary">Você pode ter promoções disponíveis</span>
-          <ChevronRight size={14} className="text-brand-text shrink-0" />
-        </button>
-      ) : giftbackBalance > 0 ? (
-        <button
-          onClick={() => navigate('/pagamento?mode=mine')}
-          className="w-full flex items-center justify-between px-4 py-2 border-b border-border hover:bg-surface-low transition-colors"
-        >
-          <div className="flex items-center gap-1.5">
-            <Coins size={13} style={{ color: 'var(--color-loyalty-gold)' }} />
-            <span className="text-xs font-medium" style={{ color: 'var(--color-loyalty-gold)' }}>
-              Você tem R$ {formatPrice(giftbackBalance)} de saldo
-            </span>
-          </div>
-          <ChevronRight size={14} style={{ color: 'var(--color-loyalty-gold)' }} className="shrink-0" />
-        </button>
-      ) : null}
+      <div className="px-4 pt-3 pb-3">
+        {/* Promo / saldo tag */}
+        {!isAuthenticated ? (
+          <button
+            onClick={() => navigate('/login')}
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-pill text-[10px] font-bold bg-surface-low text-txt-secondary mb-3"
+          >
+            Você pode ter promoções disponíveis
+            <ChevronRight size={10} className="shrink-0" />
+          </button>
+        ) : giftbackBalance > 0 ? (
+          <button
+            onClick={() => navigate('/pagamento?mode=mine')}
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-pill text-[10px] font-bold mb-3"
+            style={{
+              backgroundColor: 'color-mix(in srgb, var(--color-loyalty-gold) 12%, transparent)',
+              color: 'var(--color-loyalty-gold)',
+            }}
+          >
+            <Coins size={11} />
+            Você tem R${formatPrice(giftbackBalance)} de saldo
+            <ChevronRight size={10} className="shrink-0" />
+          </button>
+        ) : null}
 
-      {/* Order summary row */}
-      <div className="flex items-center justify-between px-4 py-3">
+        {/* Main row */}
         {hasItems ? (
-          <div className="flex flex-col">
-            <span className="text-xs text-txt-secondary">Total sem serviço</span>
-            <div className="flex items-baseline gap-1">
-              <span className="text-sm font-bold text-txt-primary">
-                R$ {formatPrice(totalCents)}
-              </span>
-              <span className="text-xs text-txt-secondary">/ {itemCount} {itemCount === 1 ? 'item' : 'itens'}</span>
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-xs text-txt-secondary">Total sem serviço</span>
+              <div className="flex items-baseline gap-1.5">
+                <span
+                  className="text-xl font-bold font-display"
+                  style={{ color: 'var(--color-brand-fill)' }}
+                >
+                  R$ {formatPrice(totalCents)}
+                </span>
+                <span className="text-xs text-txt-secondary">
+                  / {itemCount} {itemCount === 1 ? 'item' : 'itens'}
+                </span>
+              </div>
             </div>
+
+            <motion.button
+              id="view-order-btn"
+              onClick={onViewOrder}
+              className="px-6 py-3 rounded-pill text-sm font-bold font-display text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform"
+              whileTap={{ scale: 0.97 }}
+            >
+              Ver pedido
+            </motion.button>
           </div>
         ) : (
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-txt-secondary">Nenhum item no carrinho</span>
-          </div>
+          <motion.button
+            id="view-order-btn"
+            onClick={() => navigate('/conta-mesa')}
+            className="w-full py-3 rounded-pill text-sm font-bold font-display text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform"
+            whileTap={{ scale: 0.97 }}
+          >
+            Ver conta
+          </motion.button>
         )}
-
-        <motion.button
-          id="view-order-btn"
-          onClick={hasItems ? onViewOrder : () => navigate('/conta-mesa')}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-pill text-sm font-bold text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95"
-          style={{ minWidth: 130 }}
-          whileTap={{ scale: 0.97 }}
-        >
-          {hasItems ? (
-            <>
-              <ShoppingBag size={16} strokeWidth={2.5} />
-              <span>Ver pedido</span>
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={itemCount}
-                  initial={{ scale: 0.5, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.5, opacity: 0 }}
-                  className="bg-white/25 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold"
-                >
-                  {itemCount}
-                </motion.span>
-              </AnimatePresence>
-            </>
-          ) : (
-            <>
-              <Receipt size={16} strokeWidth={2.5} />
-              <span>Ver conta</span>
-            </>
-          )}
-        </motion.button>
       </div>
     </div>
   )

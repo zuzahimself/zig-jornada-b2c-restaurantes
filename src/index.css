@@ -64,6 +64,26 @@
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* ─── Button shimmer (CTA highlight) ──────────────────────────────────────── */
+@keyframes btn-shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.shimmer-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255,255,255,0.18) 48%,
+    rgba(255,255,255,0.24) 50%,
+    rgba(255,255,255,0.18) 52%,
+    transparent 70%
+  );
+  animation: btn-shimmer 2.8s ease-in-out infinite;
+}
+
 /* ─── Skeleton shimmer ────────────────────────────────────────────────────── */
 @keyframes shimmer {
   0%   { background-position: -200% 0; }

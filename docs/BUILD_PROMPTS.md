@@ -570,3 +570,23 @@ Dados mockados por userId para demo:
 | 12 | QR routing + splash |
 | 13 | Banner de programação e propaganda |
 | 14 | CPF↔pedido (CRM layer) |
+
+---
+
+## DETALHES PENDENTES
+
+### Consistência de botões (design debt)
+
+O app tem uma variedade grande de estilos de botão sem padronização clara:
+- Diferentes border-radius: `rounded-pill` (500px), `rounded-xl` (12px), `rounded-2xl` (16px)
+- Tamanhos inconsistentes: `py-2`, `py-2.5`, `py-3`, `py-3.5`
+- Pesos de fonte misturados: `font-medium` vs `font-bold` vs `font-semibold`
+- Cores de fundo: brand-fill, surface-low, white, rgba overlays, cinzas variados
+- Borders: alguns com borda, outros sem, espessuras diferentes
+
+**Ação necessária:** definir um sistema de botões com 3 variantes claras:
+1. **Primary** — brand-fill, text-on-brand, rounded-pill, font-bold (1 por tela no máximo)
+2. **Secondary** — outline (border-brand-fill, text-brand-text, bg-transparent), rounded-pill
+3. **Ghost/Text** — sem fundo, sem borda, text-brand-text ou text-txt-tertiary
+
+Revisar todas as telas e unificar. Isso não é urgente, mas está criando ruído visual nas telas com múltiplos CTAs (ex: Success, Payment, Cart).
