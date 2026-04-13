@@ -74,7 +74,7 @@ export function MockSwitcher({ onApply }: MockSwitcherProps) {
           Avançar status dos pedidos
         </button>
         <button
-          onClick={() => { resetOrders(); onApply?.() }}
+          onClick={() => { resetOrders(); sessionStorage.removeItem('hero-seen'); window.location.reload() }}
           className="w-full flex items-center justify-center gap-2 py-2 rounded-pill text-sm font-semibold border border-border text-red-500 hover:bg-red-50 active:scale-95 transition-transform mt-2"
         >
           <RotateCcw size={14} />

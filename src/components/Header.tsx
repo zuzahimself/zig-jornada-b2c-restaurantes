@@ -8,10 +8,11 @@ interface HeaderProps {
   onMenuOpen: () => void
   tableNumber?: number
   scrolled?: boolean
+  heroMode?: boolean
   onHeightChange?: (h: number) => void
 }
 
-export function Header({ onMenuOpen, tableNumber = 12, scrolled = false, onHeightChange }: HeaderProps) {
+export function Header({ onMenuOpen, tableNumber = 12, scrolled = false, heroMode = false, onHeightChange }: HeaderProps) {
   const { tokens, textOnBrand, scale } = useBrand()
   const { user, isAuthenticated } = useAuth()
   const fill = tokens['--color-brand-fill']
@@ -63,8 +64,14 @@ export function Header({ onMenuOpen, tableNumber = 12, scrolled = false, onHeigh
         </Link>
       </div>
 
-      {/* Row 2: Search input + hamburger */}
-      <div className="flex items-center gap-3">
+      {/* Row 2: Search input + hamburger — hidden during hero, fades in when scrolled */}
+      <div
+        className="flex items-center gap-3 transition-all duration-300"
+        style={{
+          opacity: (!heroMode || scrolled) ? 1 : 0,
+          pointerEvents: (!heroMode || scrolled) ? 'auto' : 'none',
+        }}
+      >
         <div
           className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl"
           style={{
