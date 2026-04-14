@@ -20,19 +20,19 @@
 | # | Feature | Status |
 |---|---|---|
 | 01 | Sistema de cores | ✅ feito |
-| 02 | Home do Cardápio | ✅ feito |
-| 03 | Tela de Produto | ✅ feito |
-| 04 | Carrinho | ✅ feito |
+| 02 | Home do Cardápio | ✅ feito (+ hero landing com scroll morph, busca full-screen, header glass) |
+| 03 | Tela de Produto | ✅ feito (falta: sugestão de produtos relacionados) |
+| 04 | Carrinho | ✅ feito (cashback preview, shimmer no CTA, badge qtd+valor) |
 | 05 | Login / Auth | ✅ feito (CPF only, sem social login) |
-| 06 | Conta da Mesa | ✅ feito |
-| 07 | Pagamento | ✅ parcial (falta: dividir por igual, toggle serviço, loading, erros) |
-| 08 | Sucesso + Loyalty + Avaliação | ✅ parcial (falta: pesquisa de satisfação, Google Review) |
+| 06 | Conta da Mesa | ✅ feito (botões de pagamento com valores, lógica solo/múltiplos) |
+| 07 | Pagamento | ✅ feito (dividir por igual, toggle serviço, loading, estados de erro) |
+| 08 | Sucesso + Loyalty + Avaliação | ✅ feito (survey, Google Review, accordion extrato, hierarquia de CTAs) |
 | 09 | Multi-vendor | ⬜ |
 | 10 | i18n (PT/EN/ES/FR) | ⬜ |
-| 11 | KDS / Acompanhamento real-time | ✅ parcial (mock com MockSwitcher, sem polling automático) |
+| 11 | KDS / Acompanhamento real-time | ✅ parcial (mock manual via MockSwitcher, sem polling automático) |
 | 12 | QR Routing + Splash de entrada | ⬜ |
 | 13 | Banner de programação / propaganda | ⬜ |
-| 14 | Vinculação CPF↔Pedido (CRM layer) | ✅ parcial (CPF vincula pedido, sem onboarding) |
+| 14 | Vinculação CPF↔Pedido (CRM layer) | ✅ parcial (CPF vincula pedido, sem onboarding "bem-vindo de volta") |
 
 ---
 
@@ -42,27 +42,29 @@
 
 ### Gaps prioritários (frontend implementável)
 
-| # | Gap | Seção da jornada | Onde implementar |
-|---|-----|-------------------|------------------|
-| G1 | **Dividir por igual** — terceira opção de pagamento (divide por pessoas logadas na mesa) | Conta/Pagamento | `TableAccount.tsx` + `Payment.tsx` |
-| G2 | **Toggle de serviço** — poder desligar os 10% no pagamento | Conta/Pagamento | `Payment.tsx` |
-| G3 | **Preview de cashback no carrinho** — estimativa antes de enviar pedido | Pedido | `CartSheet.tsx` |
-| G4 | **Processamento de pagamento** — tela de loading entre "Pagar" e "Sucesso" | Conta/Pagamento | `Payment.tsx` → nova tela ou estado inline |
-| G5 | **Estados de erro** — PIX expirado, cartão falhou, com retry | Conta/Pagamento | `Payment.tsx` |
-| G6 | **Pesquisa de satisfação** — rating + dimensões + redirect Google Review | Pós | `Success.tsx` ou nova tela |
-| G7 | **Aguarda demais pagamentos** — estado de pendência quando mesa não está 100% paga | Pós | `Success.tsx` |
+| # | Gap | Status | Onde implementar |
+|---|-----|--------|------------------|
+| G1 | **Dividir por igual** | ✅ feito | `TableAccount.tsx` + `Payment.tsx` |
+| G2 | **Toggle de serviço** | ✅ feito | `Payment.tsx` |
+| G3 | **Preview de cashback no carrinho** | ✅ feito | `CartSheet.tsx` |
+| G4 | **Processamento de pagamento** (loading) | ✅ feito | `Payment.tsx` |
+| G5 | **Estados de erro** (PIX expirado, cartão falhou) | ✅ feito | `Payment.tsx` |
+| G6 | **Pesquisa de satisfação** + Google Review | ✅ feito | `SatisfactionSurvey.tsx` + `Success.tsx` |
+| G7 | **Aguarda demais pagamentos** | ✅ feito | `Success.tsx` (accordion extrato) |
 
-### Gaps secundários (escopo maior / infra)
+### Gaps restantes
 
-| # | Gap | Seção da jornada |
-|---|-----|-------------------|
-| G8 | Multi-vendor / Seleção de loja | Cardápio |
-| G9 | QR Scan routing + "Cardápio ativo?" decision | Entrada |
-| G10 | Info nutricional no produto | Cardápio |
-| G11 | Sugestão de produtos no ProductDetail | Cardápio |
-| G12 | Social login (Google/Apple) | Pedido |
-| G13 | Programação do local no banner de entrada | Entrada |
-| G14 | Mesa fecha automático (conceito backend) | Pós |
+| # | Gap | Seção da jornada | Prioridade |
+|---|-----|-------------------|------------|
+| G11 | **Sugestão de produtos no ProductDetail** | Cardápio | Alta — melhora conversão |
+| G15 | **KDS polling automático** (simular evolução de status) | Acompanhamento | Média — dá vida ao demo |
+| G13 | **Programação do local / banners contextuais** | Entrada | Média — enriquece carousel |
+| G9 | **QR Scan routing + Splash de entrada** | Entrada | Média — fecha jornada de entrada |
+| G8 | **Multi-vendor / Food Hall** | Cardápio | Alta complexidade |
+| G12 | **Social login (Google/Apple)** | Pedido | Baixa — mock já funciona |
+| G14 | **Mesa fecha automático** | Pós | Conceito backend |
+| G16 | **Onboarding CPF novo / "bem-vindo de volta"** | Login | Baixa |
+| G17 | **Consistência de botões** (design debt) | Transversal | Média — ver seção DETALHES PENDENTES |
 
 ---
 

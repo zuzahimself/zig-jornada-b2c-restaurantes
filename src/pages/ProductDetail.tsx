@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, ChevronDown } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { ArrowLeft } from 'lucide-react'
 import { menuItems, categories } from '../data/menuData'
 import { formatPrice } from '../lib/utils'
 import { useBrand } from '../context/BrandContext'
@@ -45,7 +45,6 @@ export function ProductDetail() {
   const navigate = useNavigate()
   const { tokens } = useBrand()
   const { addItem } = useCart()
-  const [nutritionOpen, setNutritionOpen] = useState(false)
   const [selections, setSelections] = useState<Record<string, string[]>>({})
 
   const item = menuItems.find((i) => i.id === id)
@@ -56,6 +55,14 @@ export function ProductDetail() {
   }
 
   const category = categories.find((c) => c.id === item.categoryId)
+
+  // Related products: same category first, then others, excluding current
+  const relatedItems = useMemo(() => {
+    const sameCategory = menuItems.filter((i) => i.id !== item.id && i.categoryId === item.categoryId)
+    const others = menuItems.filter((i) => i.id !== item.id && i.categoryId !== item.categoryId)
+    return [...sameCategory, ...others].slice(0, 6)
+  }, [item.id, item.categoryId])
+
   const brandFill = tokens['--color-brand-fill']
   const buttonText = getTextOnBackground(brandFill)
   const hasNutrition = item.nutrition && Object.values(item.nutrition).some((v) => v != null)
@@ -155,54 +162,21 @@ export function ProductDetail() {
             />
           )}
 
-          {/* Nutrition accordion */}
+          {/* Nutrition info */}
           {hasNutrition && (
-            <div className="border border-border rounded-xl mb-4 overflow-hidden">
-              <button
-                onClick={() => setNutritionOpen(!nutritionOpen)}
-                className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-txt-primary"
-              >
-                <span className="flex items-center gap-1.5">
-                  <span>📊</span>
-                  Informações nutricionais
-                </span>
-                <motion.div
-                  animate={{ rotate: nutritionOpen ? 180 : 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <ChevronDown size={18} className="text-txt-tertiary" />
-                </motion.div>
-              </button>
-
-              <AnimatePresence>
-                {nutritionOpen && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.25 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="grid grid-cols-2 gap-3 px-4 pb-4">
-                      {(Object.keys(NUTRITION_CONFIG) as (keyof typeof NUTRITION_CONFIG)[]).map((key) => {
-                        const val = item.nutrition?.[key]
-                        if (val == null) return null
-                        const cfg = NUTRITION_CONFIG[key]
-                        return (
-                          <NutritionItem
-                            key={key}
-                            emoji={cfg.emoji}
-                            label={cfg.label}
-                            value={`${val} ${cfg.unit}`}
-                            bgColor={cfg.bg}
-                            accentColor={cfg.text}
-                          />
-                        )
-                      })}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+            <div className="bg-brand-subtle rounded-xl px-3 py-3 mb-4 grid grid-cols-4 gap-1 text-center">
+              {(Object.keys(NUTRITION_CONFIG) as (keyof typeof NUTRITION_CONFIG)[]).map((key) => {
+                const val = item.nutrition?.[key]
+                if (val == null) return null
+                const cfg = NUTRITION_CONFIG[key]
+                return (
+                  <div key={key}>
+                    <p className="text-sm mb-0.5">{cfg.emoji}</p>
+                    <p className="text-base font-bold text-txt-primary">{val}</p>
+                    <p className="text-[10px] text-txt-tertiary">{cfg.unit} · {cfg.label}</p>
+                  </div>
+                )
+              })}
             </div>
           )}
 
@@ -232,6 +206,44 @@ export function ProductDetail() {
             </div>
           )}
         </motion.div>
+
+        {/* Related products */}
+        {relatedItems.length > 0 && (
+          <div className="pt-4 pb-6 bg-brand-subtle">
+            <h2 className="px-4 mb-3 text-base font-bold font-display" style={{ color: 'var(--color-brand-500)' }}>
+              Veja também
+            </h2>
+            <div className="flex overflow-x-auto no-scrollbar px-4 gap-3">
+              {relatedItems.map((related) => {
+                const [r, c] = formatPrice(related.price).split(',')
+                return (
+                  <button
+                    key={related.id}
+                    onClick={() => navigate(`/produto/${related.id}`)}
+                    className="shrink-0 w-36 text-left"
+                  >
+                    <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden mb-2">
+                      <img src={related.image} alt={related.name} className="w-full h-full object-cover" />
+                      {related.badge && (
+                        <span className="absolute top-1.5 left-1.5 glass-badge rounded-pill px-2 py-0.5 text-white text-[10px] font-semibold">
+                          {related.badge}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm font-bold text-txt-primary leading-snug line-clamp-2 mb-1">
+                      {related.name}
+                    </p>
+                    <div className="flex items-baseline gap-0.5 font-display">
+                      <span className="text-[10px] font-semibold" style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}>R$</span>
+                      <span className="text-base font-bold" style={{ color: 'var(--color-brand-700)' }}>{r}</span>
+                      <span className="text-xs" style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}>,{c}</span>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Sticky footer */}
@@ -282,28 +294,3 @@ export function ProductDetail() {
   )
 }
 
-function NutritionItem({
-  emoji,
-  label,
-  value,
-  bgColor,
-  accentColor,
-}: {
-  emoji: string
-  label: string
-  value: string
-  bgColor: string
-  accentColor: string
-}) {
-  return (
-    <div className="rounded-lg px-3 py-2.5" style={{ backgroundColor: bgColor }}>
-      <div className="flex items-center gap-1 mb-0.5">
-        <span className="text-sm">{emoji}</span>
-        <p className="text-[10px] uppercase tracking-wide font-medium" style={{ color: accentColor }}>
-          {label}
-        </p>
-      </div>
-      <p className="text-sm font-bold" style={{ color: accentColor }}>{value}</p>
-    </div>
-  )
-}
