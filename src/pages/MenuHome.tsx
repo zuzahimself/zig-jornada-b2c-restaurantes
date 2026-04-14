@@ -12,30 +12,34 @@ import { FlyingCartItem } from '../components/FlyingCartItem'
 import { UpsellSheet } from '../components/UpsellSheet'
 import { WelcomeBanner } from '../components/WelcomeBanner'
 import { SearchOverlay } from '../components/SearchOverlay'
-import { bannerItems, categories, menuItems, suggestionItems } from '../data/menuData'
+import { VendorGrid } from '../components/VendorGrid'
+import { bannerItems, categories, menuItems, suggestionItems, vendors } from '../data/menuData'
 import { useCart } from '../context/CartContext'
 import { useBrand } from '../context/BrandContext'
+import { useMock } from '../context/MockContext'
 
 /** How many pixels of scroll the hero→card morph takes */
 const MORPH_SCROLL = 500
 const AUTO_PLAY_MS = 4000
 const NORMAL_SCROLL_THRESHOLD = 260
+const CAT_NAV_H = 44
 
 export function MenuHome() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { totalCents, itemCount, openCartAfterAdd, setOpenCartAfterAdd, lastAddedImage, clearLastAdded } = useCart()
   const { scale } = useBrand()
+  const { isMultiVendor } = useMock()
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [cartSheetOpen, setCartSheetOpen] = useState(false)
   const [showUpsell, setShowUpsell] = useState(false)
   const [flyingImage, setFlyingImage] = useState<string | null>(null)
   const [activeCategory, setActiveCategory] = useState('destaques')
-  const [activeSubcategory, setActiveSubcategory] = useState<string | null>(null)
   const [scrolled, setScrolled] = useState(false)
   const [morphComplete, setMorphComplete] = useState(false)
   const [headerHeight, setHeaderHeight] = useState(96)
   const mainRef = useRef<HTMLElement>(null)
+  const isScrollingToRef = useRef(false)
 
   // ── Session flag: hero only shows on first visit ──────────────────────
   const [heroSeen] = useState(() =>
@@ -88,7 +92,7 @@ export function MenuHome() {
   const bottomBarY = useTransform(scrollY, [MORPH_SCROLL * 0.5, MORPH_SCROLL], [80, 0])
   const dotsOpacity = useTransform(scrollY, [MORPH_SCROLL * 0.7, MORPH_SCROLL], [0, 1])
 
-  // ── Cart / navigation effects (unchanged) ──────────────────────────────
+  // ── Cart / navigation effects ──────────────────────────────────────────
 
   useEffect(() => {
     if (lastAddedImage) {
@@ -129,7 +133,9 @@ export function MenuHome() {
 
   const onHeaderHeight = useCallback((h: number) => setHeaderHeight(h), [])
 
-  // Scroll detection — different thresholds for hero vs normal
+  // ── Scroll spy: update active category based on scroll position ────────
+  const stickyOffset = headerHeight + CAT_NAV_H
+
   useEffect(() => {
     const el = mainRef.current
     if (!el) return
@@ -141,10 +147,41 @@ export function MenuHome() {
         setScrolled(st > MORPH_SCROLL * 0.4)
         setMorphComplete(st > MORPH_SCROLL * 0.8)
       }
+
+      // Scroll spy — skip if we're programmatically scrolling
+      if (isScrollingToRef.current) return
+
+      const containerTop = el.getBoundingClientRect().top
+      let current = categories[0]?.id
+      for (const cat of categories) {
+        const section = document.getElementById(`cat-section-${cat.id}`)
+        if (!section) continue
+        const sectionTop = section.getBoundingClientRect().top - containerTop
+        if (sectionTop <= stickyOffset + 20) {
+          current = cat.id
+        }
+      }
+      if (current && current !== activeCategory) {
+        setActiveCategory(current)
+      }
     }
     el.addEventListener('scroll', onScroll, { passive: true })
     return () => el.removeEventListener('scroll', onScroll)
-  }, [heroSeen])
+  }, [heroSeen, stickyOffset, activeCategory])
+
+  // ── Scroll to category section ─────────────────────────────────────────
+  const scrollToCategory = useCallback((catId: string) => {
+    const section = document.getElementById(`cat-section-${catId}`)
+    if (!section) return
+
+    setActiveCategory(catId)
+    isScrollingToRef.current = true
+
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' })
+
+    // Re-enable scroll spy after animation completes
+    setTimeout(() => { isScrollingToRef.current = false }, 800)
+  }, [])
 
   // ── Shared carousel slide JSX ──────────────────────────────────────────
 
@@ -321,25 +358,25 @@ export function MenuHome() {
         {/* ── Content (shared) ── */}
         <div className="relative">
           <div className="relative z-10">
+            {isMultiVendor && (
+              <VendorGrid vendors={vendors} />
+            )}
+
             <CategoryNav
               categories={categories}
               activeCategory={activeCategory}
-              activeSubcategory={activeSubcategory}
-              onCategoryChange={setActiveCategory}
-              onSubcategoryChange={setActiveSubcategory}
+              onCategoryChange={scrollToCategory}
               scrolled={scrolled}
               stickyTop={headerHeight}
             />
 
-            {activeCategory === 'destaques' && (
-              <SuggestionSection items={suggestionItems} />
-            )}
+            <SuggestionSection items={suggestionItems} />
 
             <ProductList
               categories={categories}
               items={menuItems}
-              activeCategory={activeCategory}
-              activeSubcategory={activeSubcategory}
+              showVendor={isMultiVendor}
+              stickyOffset={stickyOffset}
             />
           </div>
         </div>
@@ -382,15 +419,7 @@ export function MenuHome() {
         isOpen={searchOpen}
         onClose={() => setSearchOpen(false)}
         onCategorySelect={(id) => {
-          setActiveCategory(id)
-          setActiveSubcategory(null)
-          // Scroll past the banner so the user sees the category nav + products
-          setTimeout(() => {
-            const el = mainRef.current
-            if (!el) return
-            const target = heroSeen ? 300 : wrapperHeight + 50
-            el.scrollTo({ top: target, behavior: 'smooth' })
-          }, 100)
+          scrollToCategory(id)
         }}
       />
     </motion.div>

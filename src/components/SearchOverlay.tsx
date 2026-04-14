@@ -2,7 +2,8 @@ import { useState, useRef, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Search, X } from 'lucide-react'
-import { menuItems, categories } from '../data/menuData'
+import { menuItems, categories, vendors } from '../data/menuData'
+import { useMock } from '../context/MockContext'
 import { formatPrice } from '../lib/utils'
 import type { MenuItem } from '../types'
 
@@ -14,6 +15,7 @@ interface SearchOverlayProps {
 
 export function SearchOverlay({ isOpen, onClose, onCategorySelect }: SearchOverlayProps) {
   const navigate = useNavigate()
+  const { isMultiVendor } = useMock()
   const inputRef = useRef<HTMLInputElement>(null)
   const [query, setQuery] = useState('')
 
@@ -118,7 +120,7 @@ export function SearchOverlay({ isOpen, onClose, onCategorySelect }: SearchOverl
                 </p>
                 <div className="flex flex-col gap-1">
                   {menuItems.filter((i) => i.badge).slice(0, 5).map((item) => (
-                    <ResultRow key={item.id} item={item} onTap={handleItemTap} />
+                    <ResultRow key={item.id} item={item} onTap={handleItemTap} showVendor={isMultiVendor} />
                   ))}
                 </div>
               </div>
@@ -149,7 +151,7 @@ export function SearchOverlay({ isOpen, onClose, onCategorySelect }: SearchOverl
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.15 }}
                       >
-                        <ResultRow item={item} onTap={handleItemTap} />
+                        <ResultRow item={item} onTap={handleItemTap} showVendor={isMultiVendor} />
                       </motion.div>
                     ))}
                   </AnimatePresence>
@@ -163,8 +165,9 @@ export function SearchOverlay({ isOpen, onClose, onCategorySelect }: SearchOverl
   )
 }
 
-function ResultRow({ item, onTap }: { item: MenuItem; onTap: (item: MenuItem) => void }) {
+function ResultRow({ item, onTap, showVendor }: { item: MenuItem; onTap: (item: MenuItem) => void; showVendor?: boolean }) {
   const [reais, centavos] = formatPrice(item.price).split(',')
+  const vendor = showVendor ? vendors.find((v) => v.id === item.vendorId) : undefined
 
   return (
     <button
@@ -179,6 +182,12 @@ function ResultRow({ item, onTap }: { item: MenuItem; onTap: (item: MenuItem) =>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-txt-primary truncate">{item.name}</p>
         <p className="text-xs text-txt-secondary line-clamp-1">{item.description}</p>
+        {vendor && (
+          <div className="flex items-center gap-1 mt-0.5">
+            <img src={vendor.logo} alt={vendor.name} className="w-3.5 h-3.5 rounded-full object-cover" />
+            <span className="text-[10px] font-medium text-txt-tertiary">{vendor.name}</span>
+          </div>
+        )}
       </div>
       <div className="flex items-baseline gap-0.5 font-display shrink-0">
         <span className="text-[10px]" style={{ color: 'var(--color-brand-700)' }}>R$</span>

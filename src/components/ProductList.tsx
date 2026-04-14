@@ -1,58 +1,69 @@
 import { Link } from 'react-router-dom'
 import type { Category, MenuItem } from '../types'
+import { vendors } from '../data/menuData'
 import { formatPrice, cn } from '../lib/utils'
 
 interface ProductListProps {
   categories: Category[]
   items: MenuItem[]
-  activeCategory: string
-  activeSubcategory: string | null
+  showVendor?: boolean
+  /** Total height of sticky elements above (header + category nav) for scroll-margin */
+  stickyOffset?: number
 }
 
 export function ProductList({
   categories,
   items,
-  activeCategory,
-  activeSubcategory,
+  showVendor,
+  stickyOffset = 140,
 }: ProductListProps) {
-  const activeCat = categories.find((c) => c.id === activeCategory)
-  const filtered = items.filter((item) => {
-    if (item.categoryId !== activeCategory) return false
-    if (activeSubcategory && item.subcategoryId !== activeSubcategory) return false
-    return true
-  })
-
-  if (filtered.length === 0) return null
-
-  // Promo items go first
-  const promos = filtered.filter((i) => i.isPromo)
-  const regulars = filtered.filter((i) => !i.isPromo)
-  const ordered = [...promos, ...regulars]
-
   return (
-    <section className="pb-4">
-      {/* Section header */}
-      <div className="flex items-center gap-2 px-4 py-3">
-        <h2 className="text-xl font-bold font-display" style={{ color: 'var(--color-brand-500)' }}>{activeCat?.name ?? activeCategory}</h2>
-        <span className="text-sm text-txt-secondary">({filtered.length})</span>
-      </div>
+    <>
+      {categories.map((cat) => {
+        const catItems = items.filter((i) => i.categoryId === cat.id)
+        if (catItems.length === 0) return null
 
-      <div className="divide-y divide-black/5">
-        {ordered.map((item) => (
-          <Link key={item.id} to={`/produto/${item.id}`} className="block">
-            <ProductCard item={item} />
-          </Link>
-        ))}
-      </div>
-    </section>
+        const promos = catItems.filter((i) => i.isPromo)
+        const regulars = catItems.filter((i) => !i.isPromo)
+        const ordered = [...promos, ...regulars]
+
+        return (
+          <section
+            key={cat.id}
+            id={`cat-section-${cat.id}`}
+            className="pb-4"
+            style={{ scrollMarginTop: stickyOffset }}
+          >
+            <div className="flex items-center gap-2 px-4 py-3">
+              <h2
+                className="text-xl font-bold font-display"
+                style={{ color: 'var(--color-brand-500)' }}
+              >
+                {cat.name}
+              </h2>
+              <span className="text-sm text-txt-secondary">({catItems.length})</span>
+            </div>
+
+            <div className="divide-y divide-black/5">
+              {ordered.map((item) => (
+                <Link key={item.id} to={`/produto/${item.id}`} className="block">
+                  <ProductCard item={item} showVendor={showVendor} />
+                </Link>
+              ))}
+            </div>
+          </section>
+        )
+      })}
+    </>
   )
 }
 
-function ProductCard({ item }: { item: MenuItem }) {
+function ProductCard({ item, showVendor }: { item: MenuItem; showVendor?: boolean }) {
   const [reais, centavos] = formatPrice(item.price).split(',')
   const originalPrice = item.discountPercent
     ? formatPrice(Math.round(item.price / (1 - item.discountPercent / 100)))
     : null
+  const vendor = showVendor ? vendors.find((v) => v.id === item.vendorId) : undefined
 
   return (
     <div
@@ -61,24 +72,28 @@ function ProductCard({ item }: { item: MenuItem }) {
         item.isPromo && 'bg-brand-subtle'
       )}
     >
-      {/* Left: text content */}
       <div className="flex-1 min-w-0">
-        {/* Promo badge */}
         {item.badge && (
           <div className="inline-flex items-center glass-badge rounded-pill px-3 py-1 text-white text-xs font-semibold mb-1 float-right ml-2">
             {item.badge}
           </div>
         )}
 
-        <p className="text-sm font-bold text-txt-primary leading-snug mb-1">
+        <p className="text-sm font-bold text-txt-primary leading-snug mb-0.5">
           {item.name}
         </p>
+
+        {vendor && (
+          <div className="flex items-center gap-1.5 mb-1">
+            <img src={vendor.logo} alt={vendor.name} className="w-3.5 h-3.5 rounded-full object-cover" />
+            <span className="text-[10px] font-medium text-txt-tertiary">{vendor.name}</span>
+          </div>
+        )}
 
         <p className="text-xs text-txt-secondary leading-snug line-clamp-2 mb-2">
           {item.description}
         </p>
 
-        {/* Price row */}
         <div className="flex items-center gap-2">
           <div className="flex items-baseline gap-0.5 font-display">
             <span className="text-[10px] font-semibold" style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}>R$</span>
@@ -91,7 +106,6 @@ function ProductCard({ item }: { item: MenuItem }) {
         </div>
       </div>
 
-      {/* Right: photo */}
       <div className="shrink-0 w-[88px] h-[88px] rounded-md overflow-hidden">
         <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
       </div>

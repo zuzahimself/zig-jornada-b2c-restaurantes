@@ -7,6 +7,8 @@ export interface MenuItem {
   image: string
   categoryId: string
   subcategoryId?: string
+  /** Vendor that provides this item (multi-vendor / food hall mode) */
+  vendorId?: string
   isPromo?: boolean
   discountPercent?: number
   badge?: string
@@ -55,6 +57,15 @@ export interface BannerItem {
   image: string
   label: string
   badge: string
+}
+
+export interface Vendor {
+  id: string
+  name: string
+  logo: string
+  /** Brand accent color for the vendor */
+  color: string
+  subtitle?: string
 }
 
 export interface CartItem {

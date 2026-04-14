@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChefHat, RotateCcw, Coins } from 'lucide-react'
+import { ChefHat, RotateCcw, Coins, Store } from 'lucide-react'
 import { useMock, type TableStatus } from '../context/MockContext'
 import { cn, formatPrice } from '../lib/utils'
 
@@ -14,7 +14,7 @@ const SCENARIOS: { value: TableStatus; label: string }[] = [
 ]
 
 export function MockSwitcher({ onApply }: MockSwitcherProps) {
-  const { tableStatus, setTableStatus, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance } = useMock()
+  const { tableStatus, setTableStatus, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance, isMultiVendor, setMultiVendor } = useMock()
   const [local, setLocal] = useState<TableStatus>(tableStatus)
 
   function handleApply() {
@@ -24,6 +24,32 @@ export function MockSwitcher({ onApply }: MockSwitcherProps) {
 
   return (
     <div className="flex flex-col gap-3">
+      {/* Multi-vendor toggle */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Store size={14} className="text-txt-secondary" />
+          <span className="text-sm font-medium text-txt-primary">Food Hall</span>
+        </div>
+        <button
+          role="switch"
+          aria-checked={isMultiVendor}
+          onClick={() => setMultiVendor(!isMultiVendor)}
+          className={cn(
+            'relative w-10 h-[22px] rounded-full transition-colors',
+            isMultiVendor ? 'bg-brand-fill' : 'bg-gray-300'
+          )}
+        >
+          <span
+            className={cn(
+              'absolute top-0.5 left-0.5 w-[18px] h-[18px] rounded-full bg-white shadow transition-transform',
+              isMultiVendor && 'translate-x-[18px]'
+            )}
+          />
+        </button>
+      </div>
+
+      <div className="border-t border-border pt-3" />
+
       <div className="flex flex-col gap-1.5">
         {SCENARIOS.map((s) => {
           const isActive = local === s.value

@@ -10,6 +10,7 @@ import { Login } from './pages/Login'
 import { TableAccount } from './pages/TableAccount'
 import { Payment } from './pages/Payment'
 import { Success } from './pages/Success'
+import { VendorMenu } from './pages/VendorMenu'
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<MenuHome />} />
+          <Route path="/vendor/:vendorId" element={<VendorMenu />} />
           <Route path="/produto/:id" element={<ProductDetail />} />
           <Route path="/carrinho" element={<Cart />} />
           <Route path="/login" element={<Login />} />
