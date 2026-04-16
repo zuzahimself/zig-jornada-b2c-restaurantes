@@ -118,14 +118,14 @@ export function MockSwitcher({ onApply }: MockSwitcherProps) {
         </p>
         <button
           onClick={() => { advanceOrderStatus(); onApply?.() }}
-          className="w-full flex items-center justify-center gap-2 py-2 rounded-pill text-sm font-semibold border border-border text-txt-secondary hover:bg-surface-low active:scale-95 transition-transform"
+          className="w-full flex items-center justify-center gap-2 py-2 rounded-pill text-sm font-bold border border-border text-txt-secondary hover:bg-surface-low active:scale-95 transition-transform"
         >
           <ChefHat size={15} />
           Avançar status dos pedidos
         </button>
         <button
           onClick={() => { resetOrders(); sessionStorage.removeItem('hero-seen'); window.location.reload() }}
-          className="w-full flex items-center justify-center gap-2 py-2 rounded-pill text-sm font-semibold border border-border text-red-500 hover:bg-red-50 active:scale-95 transition-transform mt-2"
+          className="w-full flex items-center justify-center gap-2 py-2 rounded-pill text-sm font-bold border border-border text-red-500 hover:bg-red-50 active:scale-95 transition-transform mt-2"
         >
           <RotateCcw size={14} />
           Zerar mesa

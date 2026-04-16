@@ -287,14 +287,14 @@ export function TableAccount() {
                   <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={() => navigate(`/pagamento?mode=split&people=${splitPeople}`)}
-                    className="w-full py-3 px-4 rounded-md flex items-center justify-between text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform"
+                    className="w-full py-3 px-4 rounded-pill flex items-center justify-between text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform"
                   >
                     <span className="text-sm font-bold font-display">Pagar minha parte</span>
                     <span className="text-sm font-semibold">R$ {formatPrice(Math.ceil(remaining / splitPeople))}</span>
                   </motion.button>
                   <button
                     onClick={() => setShowSplit(false)}
-                    className="text-sm font-medium text-brand-text"
+                    className="py-2 text-sm font-medium text-brand-text"
                   >
                     Cancelar
                   </button>
@@ -312,7 +312,7 @@ export function TableAccount() {
                   <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={() => navigate('/pagamento?mode=mine')}
-                    className="w-full py-3.5 px-5 rounded-md flex items-center justify-between text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform"
+                    className="w-full py-3 px-5 rounded-pill flex items-center justify-between text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform"
                   >
                     <span className="text-base font-bold font-display">
                       {isAlone ? 'Pagar conta' : 'Pagar minha parte'}
@@ -330,7 +330,7 @@ export function TableAccount() {
                     <motion.button
                       whileTap={{ scale: 0.97 }}
                       onClick={() => setShowSplit(true)}
-                      className="w-full py-3.5 px-5 rounded-md flex items-center justify-between border border-brand-fill active:scale-95 transition-transform"
+                      className="w-full py-3 px-5 rounded-pill flex items-center justify-between border border-brand-border active:scale-95 transition-transform hover:bg-brand-subtle"
                       style={{ color: 'var(--color-brand-fill)' }}
                     >
                       <span className="text-base font-bold font-display">Dividir</span>
@@ -350,7 +350,7 @@ export function TableAccount() {
                     <motion.button
                       whileTap={{ scale: 0.97 }}
                       onClick={() => navigate('/pagamento?mode=total')}
-                      className="w-full py-3.5 px-5 rounded-md flex items-center justify-between border border-brand-fill active:scale-95 transition-transform"
+                      className="w-full py-3 px-5 rounded-pill flex items-center justify-between border border-brand-border active:scale-95 transition-transform hover:bg-brand-subtle"
                       style={{ color: 'var(--color-brand-fill)' }}
                     >
                       <span className="text-base font-bold font-display">Pagar tudo</span>

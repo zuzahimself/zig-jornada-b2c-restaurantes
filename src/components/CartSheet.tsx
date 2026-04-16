@@ -245,7 +245,7 @@ function EmptyState({ onClose }: { onClose: () => void }) {
       <motion.button
         whileTap={{ scale: 0.97 }}
         onClick={onClose}
-        className="mt-3 px-6 py-2.5 rounded-pill text-sm font-bold text-on-brand bg-brand-fill"
+        className="mt-3 px-6 py-3 rounded-pill text-sm font-bold text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform"
       >
         Explorar cardápio
       </motion.button>

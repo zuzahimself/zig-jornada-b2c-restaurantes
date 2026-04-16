@@ -51,14 +51,14 @@ export function SatisfactionSurvey({ onDismiss }: SatisfactionSurveyProps) {
               window.open('https://search.google.com/local/writereview?placeid=MOCK_PLACE_ID', '_blank')
               onDismiss()
             }}
-            className="w-full py-3 rounded-pill text-sm font-bold border border-brand-fill text-brand-text hover:bg-brand-subtle active:scale-95 transition-all flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-pill text-sm font-bold border border-brand-border text-brand-text hover:bg-brand-subtle active:scale-95 transition-all flex items-center justify-center gap-2"
           >
             <ExternalLink size={14} />
             Avaliar no Google
           </button>
           <button
             onClick={onDismiss}
-            className="w-full mt-2 py-2 text-sm font-medium text-txt-tertiary"
+            className="w-full mt-2 py-2 text-sm font-medium text-brand-text"
           >
             Agora não
           </button>
@@ -182,7 +182,7 @@ export function SatisfactionSurvey({ onDismiss }: SatisfactionSurveyProps) {
         whileTap={{ scale: 0.97 }}
         onClick={handleSubmit}
         disabled={rating === 0}
-        className="w-full py-3 rounded-pill text-sm font-bold border border-brand-fill text-brand-text hover:bg-brand-subtle transition-all disabled:opacity-30 disabled:border-border disabled:text-txt-tertiary"
+        className="w-full py-3 rounded-pill text-sm font-bold border border-brand-border text-brand-text hover:bg-brand-subtle transition-all disabled:opacity-30 disabled:border-border disabled:text-txt-tertiary"
       >
         Enviar avaliação
       </motion.button>

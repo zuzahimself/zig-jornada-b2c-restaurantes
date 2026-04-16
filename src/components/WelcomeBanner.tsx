@@ -132,7 +132,7 @@ export function WelcomeBanner() {
                 transition={{ delay: 0.5 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={handleLogin}
-                className="w-full py-3.5 rounded-xl text-sm font-bold text-on-brand bg-brand-fill hover:bg-brand-fill-hover transition-colors flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-pill text-sm font-bold text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform flex items-center justify-center gap-2"
               >
                 Entrar agora
                 <ChevronRight size={16} />
@@ -144,7 +144,7 @@ export function WelcomeBanner() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.55 }}
                 onClick={dismiss}
-                className="w-full mt-3 py-2 text-sm font-medium text-txt-tertiary"
+                className="w-full mt-3 py-2 text-sm font-medium text-brand-text"
               >
                 Continuar sem identificação
               </motion.button>

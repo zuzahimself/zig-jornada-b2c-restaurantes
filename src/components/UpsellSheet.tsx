@@ -141,7 +141,7 @@ export function UpsellSheet({ isOpen, excludeItemId, onClose, onViewCart }: Upse
               </motion.button>
               <button
                 onClick={handleContinue}
-                className="w-full py-2.5 rounded-xl text-sm font-semibold text-txt-secondary"
+                className="w-full py-2 text-sm font-medium text-brand-text"
               >
                 Continuar comprando
               </button>

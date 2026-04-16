@@ -366,7 +366,7 @@ export function Payment() {
           whileTap={{ scale: 0.97 }}
           onClick={handlePay}
           disabled={processing}
-          className="w-full py-3.5 rounded-xl text-sm font-bold text-on-brand bg-brand-fill hover:bg-brand-fill-hover transition-colors disabled:opacity-50"
+          className="w-full py-3 rounded-pill text-sm font-bold text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform disabled:opacity-50"
         >
           Pagar R$ {formatPrice(finalTotal)}
         </motion.button>
@@ -415,13 +415,13 @@ export function Payment() {
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={handlePay}
-              className="mt-4 w-full py-3.5 rounded-xl text-sm font-bold text-on-brand bg-brand-fill hover:bg-brand-fill-hover transition-colors"
+              className="mt-4 w-full py-3 rounded-pill text-sm font-bold text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform"
             >
               Tentar novamente
             </motion.button>
             <button
               onClick={() => setError(null)}
-              className="text-sm font-medium text-brand-text"
+              className="py-2 text-sm font-medium text-brand-text"
             >
               Alterar forma de pagamento
             </button>

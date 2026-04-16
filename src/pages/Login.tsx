@@ -90,7 +90,7 @@ export function Login() {
           <motion.button
             whileTap={{ scale: 0.98 }}
             onClick={() => handleSocialLogin('Google')}
-            className="w-full flex items-center justify-center gap-3 py-3 rounded-xl border border-border text-sm font-semibold text-txt-primary"
+            className="w-full flex items-center justify-center gap-3 py-3 rounded-pill border border-border text-sm font-bold text-txt-primary"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z" fill="#4285F4"/>
@@ -104,7 +104,7 @@ export function Login() {
           <motion.button
             whileTap={{ scale: 0.98 }}
             onClick={() => handleSocialLogin('Apple')}
-            className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-black text-white text-sm font-semibold"
+            className="w-full flex items-center justify-center gap-3 py-3 rounded-pill bg-black text-white text-sm font-bold"
           >
             <svg width="16" height="18" viewBox="0 0 16 18" fill="currentColor">
               <path d="M12.845 9.52c-.018-1.96 1.6-2.903 1.673-2.95-.912-1.332-2.33-1.515-2.834-1.536-1.206-.122-2.354.71-2.967.71-.613 0-1.56-.692-2.564-.673-1.32.02-2.537.767-3.216 1.95-1.372 2.38-.351 5.907.986 7.84.654.945 1.432 2.008 2.455 1.97.985-.04 1.357-.638 2.548-.638 1.19 0 1.525.638 2.564.617 1.06-.02 1.73-.965 2.38-1.913.75-1.097 1.06-2.16 1.078-2.215-.024-.01-2.068-.794-2.088-3.15l-.015-.012ZM10.87 3.34c.543-.658.91-1.572.81-2.484-.783.032-1.731.522-2.292 1.18-.503.582-.943 1.512-.825 2.403.874.068 1.764-.444 2.307-1.1Z"/>
@@ -189,7 +189,7 @@ export function Login() {
           whileTap={isValid ? { scale: 0.97 } : undefined}
           disabled={!isValid}
           onClick={handleSubmit}
-          className="w-full py-3.5 rounded-xl text-sm font-bold transition-opacity mt-4"
+          className="w-full py-3 rounded-pill text-sm font-bold transition-opacity mt-4"
           style={{
             backgroundColor: brandFill,
             color: buttonText,
@@ -202,7 +202,7 @@ export function Login() {
         {/* Back link */}
         <button
           onClick={() => navigate(-1)}
-          className="mt-4 text-sm text-txt-secondary"
+          className="mt-4 py-2 text-sm font-medium text-brand-text"
         >
           Voltar ao cardápio
         </button>

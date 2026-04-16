@@ -311,7 +311,7 @@ export function Success() {
       >
         <button
           onClick={() => navigate('/')}
-          className="w-full py-3.5 rounded-pill text-sm font-bold text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform"
+          className="w-full py-3 rounded-pill text-sm font-bold text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform"
         >
           Ver cardápio
         </button>

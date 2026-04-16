@@ -276,7 +276,7 @@ export function ProductDetail() {
               addItem(item, 1, hasCustomizations ? selections : undefined)
               navigate(-1)
             }}
-            className="flex-1 max-w-[220px] py-3 rounded-xl text-sm font-bold transition-opacity"
+            className="flex-1 max-w-[220px] py-3 rounded-pill text-sm font-bold transition-opacity"
             style={{
               backgroundColor: brandFill,
               color: buttonText,
