@@ -129,3 +129,11 @@ export interface TableOrder {
   items: OrderItem[]
   createdAt: string
 }
+
+export interface PaymentEntry {
+  id: string
+  userName: string
+  amount: number
+  method: string
+  createdAt: string
+}

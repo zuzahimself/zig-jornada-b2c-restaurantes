@@ -72,7 +72,7 @@ export function Success() {
     hasProcessed.current = true
 
     if (isPaid) {
-      recordPayment(totalCents)
+      recordPayment(totalCents, user?.name || 'Você', method)
       if (cashbackEarned > 0) {
         setGiftbackBalance(giftbackBalance + cashbackEarned)
       }

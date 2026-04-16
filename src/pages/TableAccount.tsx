@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, CheckCircle2, UtensilsCrossed, Minus, Plus, Users } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, UtensilsCrossed, Minus, Plus, Users, ChevronDown, Receipt } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useMock, getTableTotal } from '../context/MockContext'
 import { MOCK_USER_CPF } from '../data/mockTableData'
@@ -19,9 +19,10 @@ const STATUS_CONFIG: Record<OrderItemStatus, { label: string; className: string 
 export function TableAccount() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { tableStatus, paidAmount, tableOrders: mockTableOrders } = useMock()
+  const { tableStatus, paidAmount, tableOrders: mockTableOrders, payments } = useMock()
   const [tab, setTab] = useState<Tab>('mine')
   const [showSplit, setShowSplit] = useState(false)
+  const [showExtrato, setShowExtrato] = useState(false)
   const uniquePeopleCount = new Set(mockTableOrders.map((o) => o.userCpf)).size
   const [splitPeople, setSplitPeople] = useState(Math.max(2, uniquePeopleCount))
 
@@ -223,6 +224,93 @@ export function TableAccount() {
               </div>
             </>
           )}
+        </div>
+
+        {/* Extrato accordion */}
+        <div className="mb-4">
+          <button
+            onClick={() => setShowExtrato(!showExtrato)}
+            className="flex items-center justify-between w-full py-2 text-sm font-medium text-brand-text"
+          >
+            <div className="flex items-center gap-2">
+              <Receipt size={14} />
+              Extrato da mesa
+            </div>
+            <motion.span
+              animate={{ rotate: showExtrato ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ChevronDown size={16} />
+            </motion.span>
+          </button>
+
+          <AnimatePresence>
+            {showExtrato && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-surface-low rounded-xl px-3 py-3">
+                  {/* Pedidos */}
+                  <p className="text-[11px] font-semibold text-txt-tertiary uppercase tracking-wider mb-2">Pedidos</p>
+                  <div className="flex flex-col gap-1.5 mb-3">
+                    {mockTableOrders.flatMap((order) =>
+                      order.items.map((item, idx) => (
+                        <div key={`${order.id}-${idx}`} className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <span
+                              className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0"
+                              style={{
+                                backgroundColor: order.userCpf === userCpf ? 'var(--color-brand-fill)' : '#e5e7eb',
+                                color: order.userCpf === userCpf ? 'var(--color-on-brand-fill)' : '#6b7280',
+                              }}
+                            >
+                              {order.userName.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()}
+                            </span>
+                            <span className="text-txt-secondary truncate">
+                              {item.quantity}x {item.menuItem.name}
+                            </span>
+                          </div>
+                          <span className="text-txt-primary font-medium shrink-0 ml-2">
+                            R$ {formatPrice(item.menuItem.price * item.quantity)}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Pagamentos */}
+                  {payments.length > 0 && (
+                    <>
+                      <div className="border-t border-border pt-2 mb-2">
+                        <p className="text-[11px] font-semibold text-txt-tertiary uppercase tracking-wider mb-2">Pagamentos</p>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        {payments.map((p) => (
+                          <div key={p.id} className="flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-[9px] font-bold text-emerald-700 shrink-0">
+                                {p.userName.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()}
+                              </span>
+                              <span className="text-txt-secondary truncate">
+                                {p.userName} · {p.method === 'pix' ? 'Pix' : p.method === 'credit' ? 'Crédito' : 'Débito'}
+                              </span>
+                            </div>
+                            <span className="text-emerald-600 font-medium shrink-0 ml-2">
+                              - R$ {formatPrice(p.amount)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* CTA buttons */}

@@ -6,7 +6,7 @@ import {
   type ReactNode,
 } from 'react'
 import { mockTableOrders as initialOrders, getTableTotal } from '../data/mockTableData'
-import type { OrderItemStatus, TableOrder } from '../types'
+import type { OrderItemStatus, PaymentEntry, TableOrder } from '../types'
 
 export type TableStatus = 'open' | 'partially_paid' | 'fully_paid'
 
@@ -24,7 +24,8 @@ interface MockContextValue {
   giftbackBalance: number
   setGiftbackBalance: (v: number) => void
   cashbackRate: number
-  recordPayment: (amount: number) => void
+  payments: PaymentEntry[]
+  recordPayment: (amount: number, userName: string, method: string) => void
   isMultiVendor: boolean
   setMultiVendor: (v: boolean) => void
   isLoggedIn: boolean
@@ -58,6 +59,7 @@ export function MockProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setLoggedInState] = useState(defaults.isLoggedIn)
   const [hasCpf, setHasCpfState] = useState(defaults.hasCpf)
   const [hasEmail, setHasEmailState] = useState(defaults.hasEmail)
+  const [payments, setPayments] = useState<PaymentEntry[]>([])
   const cashbackRate = 0.05
 
   const persistAll = useCallback((vals: Record<string, unknown>) => {
@@ -99,6 +101,7 @@ export function MockProvider({ children }: { children: ReactNode }) {
 
   const resetOrders = useCallback(() => {
     setTableOrders([])
+    setPayments([])
     setTableStatusState('open')
     setPaidAmountState(0)
     persist('open', 0)
@@ -129,7 +132,18 @@ export function MockProvider({ children }: { children: ReactNode }) {
     persistAll({ hasEmail: v })
   }, [persistAll])
 
-  const recordPayment = useCallback((amount: number) => {
+  const recordPayment = useCallback((amount: number, userName: string, method: string) => {
+    // Add payment entry
+    setPayments((prev) => [
+      ...prev,
+      {
+        id: `pay-${Date.now()}`,
+        userName,
+        amount,
+        method,
+        createdAt: new Date().toISOString(),
+      },
+    ])
     setPaidAmountState((prev) => {
       const newPaid = prev + amount
       const sub = getTableTotal(tableOrders)
@@ -155,7 +169,7 @@ export function MockProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <MockContext.Provider value={{ tableStatus, setTableStatus, paidAmount, setPaidAmount, tableOrders, addOrder, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance, cashbackRate, recordPayment, isMultiVendor, setMultiVendor, isLoggedIn, setLoggedIn, hasCpf, setHasCpf, hasEmail, setHasEmail }}>
+    <MockContext.Provider value={{ tableStatus, setTableStatus, paidAmount, setPaidAmount, tableOrders, addOrder, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance, cashbackRate, payments, recordPayment, isMultiVendor, setMultiVendor, isLoggedIn, setLoggedIn, hasCpf, setHasCpf, hasEmail, setHasEmail }}>
       {children}
     </MockContext.Provider>
   )
