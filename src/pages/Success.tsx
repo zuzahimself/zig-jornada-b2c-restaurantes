@@ -34,6 +34,7 @@ export function Success() {
   const userEmail = user?.email || (emailSaved ? emailInput : '')
 
   const isPaid = searchParams.has('total')
+  const isPrepaid = searchParams.get('prepaid') === '1'
   const totalCents = Number(searchParams.get('total')) || 0
   const method = searchParams.get('method') || ''
   const methodLabel = METHOD_LABELS[method] || method
@@ -71,7 +72,29 @@ export function Success() {
     if (hasProcessed.current) return
     hasProcessed.current = true
 
-    if (isPaid) {
+    if (isPaid && isPrepaid) {
+      // Prepaid: pay + send order + clear cart in one step
+      recordPayment(totalCents, user?.name || 'Você', method)
+      if (cashbackEarned > 0) {
+        setGiftbackBalance(giftbackBalance + cashbackEarned)
+      }
+      if (cart.length > 0) {
+        const newOrder: TableOrder = {
+          id: `order-${Date.now()}`,
+          userName: user?.name || 'Você',
+          userCpf: user?.cpf || MOCK_USER_CPF,
+          createdAt: new Date().toISOString(),
+          items: cart.map((ci) => ({
+            menuItem: ci.item,
+            quantity: ci.quantity,
+            customizations: ci.selectedCustomizations,
+            status: 'preparing' as const,
+          })),
+        }
+        addOrder(newOrder)
+      }
+      clearCart()
+    } else if (isPaid) {
       recordPayment(totalCents, user?.name || 'Você', method)
       if (cashbackEarned > 0) {
         setGiftbackBalance(giftbackBalance + cashbackEarned)
@@ -135,7 +158,7 @@ export function Success() {
             transition={{ delay: 0.4, duration: 0.4 }}
             className="text-lg font-bold text-txt-primary mb-0.5"
           >
-            {isPaid ? 'Pagamento confirmado!' : 'Pedido enviado!'}
+            {isPrepaid ? 'Pago e enviado!' : isPaid ? 'Pagamento confirmado!' : 'Pedido enviado!'}
           </motion.h1>
 
           <motion.p
@@ -144,7 +167,7 @@ export function Success() {
             transition={{ delay: 0.5, duration: 0.3 }}
             className="text-sm text-txt-tertiary"
           >
-            {isPaid ? 'Obrigado pelo pagamento' : `Pedido ${orderNumber}`}
+            {isPrepaid ? 'Seu pedido foi enviado para a cozinha' : isPaid ? 'Obrigado pelo pagamento' : `Pedido ${orderNumber}`}
           </motion.p>
         </div>
 

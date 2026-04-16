@@ -104,7 +104,8 @@ export function Payment() {
         setError(method === 'pix' ? 'pix_expired' : 'card_failed')
         setProcessing(false)
       } else {
-        navigate(`/sucesso?total=${finalTotal}&method=${method}&cashback=${cashbackEarned}`)
+        const prepaidParam = mode === 'cart' ? '&prepaid=1' : ''
+        navigate(`/sucesso?total=${finalTotal}&method=${method}&cashback=${cashbackEarned}${prepaidParam}`)
       }
     }, 2500)
   }

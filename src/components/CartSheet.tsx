@@ -23,7 +23,7 @@ export function CartSheet({ isOpen, onClose }: CartSheetProps) {
   const { cart, removeItem, updateQuantity, totalCents, itemCount } = useCart()
   const { isAuthenticated } = useAuth()
   const { tokens } = useBrand()
-  const { cashbackRate, isMultiVendor } = useMock()
+  const { cashbackRate, isMultiVendor, isPrepaid } = useMock()
   const brandFill = tokens['--color-brand-fill']
   const buttonText = getTextOnBackground(brandFill)
 
@@ -196,7 +196,11 @@ export function CartSheet({ isOpen, onClose }: CartSheetProps) {
                         return
                       }
                       onClose()
-                      navigate('/sucesso')
+                      if (isPrepaid) {
+                        navigate('/pagamento?mode=cart')
+                      } else {
+                        navigate('/sucesso')
+                      }
                     }}
                     className="w-full py-3 px-4 rounded-pill flex items-center justify-between relative overflow-hidden"
                     style={{ backgroundColor: brandFill, color: buttonText }}
@@ -209,7 +213,7 @@ export function CartSheet({ isOpen, onClose }: CartSheetProps) {
                     >
                       {String(itemCount).padStart(2, '0')}
                     </span>
-                    <span className="text-base font-bold font-display relative">Enviar pedido</span>
+                    <span className="text-base font-bold font-display relative">{isPrepaid ? 'Pagar e enviar' : 'Enviar pedido'}</span>
                     <span className="text-sm font-semibold shrink-0 relative">R${formatPrice(grandTotal)}</span>
                   </motion.button>
                 </div>

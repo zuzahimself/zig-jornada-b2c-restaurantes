@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChefHat, RotateCcw, Coins, Store, User, CreditCard, Mail } from 'lucide-react'
+import { ChefHat, RotateCcw, Coins, Store, User, CreditCard, Mail, Banknote } from 'lucide-react'
 import { useMock, type TableStatus } from '../context/MockContext'
 import { cn, formatPrice } from '../lib/utils'
 
@@ -14,7 +14,7 @@ const SCENARIOS: { value: TableStatus; label: string }[] = [
 ]
 
 export function MockSwitcher({ onApply }: MockSwitcherProps) {
-  const { tableStatus, setTableStatus, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance, isMultiVendor, setMultiVendor, isLoggedIn, setLoggedIn, hasCpf, setHasCpf, hasEmail, setHasEmail } = useMock()
+  const { tableStatus, setTableStatus, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance, isMultiVendor, setMultiVendor, isLoggedIn, setLoggedIn, hasCpf, setHasCpf, hasEmail, setHasEmail, isPrepaid, setPrepaid } = useMock()
   const [local, setLocal] = useState<TableStatus>(tableStatus)
 
   function handleApply() {
@@ -24,6 +24,36 @@ export function MockSwitcher({ onApply }: MockSwitcherProps) {
 
   return (
     <div className="flex flex-col gap-3">
+      {/* Prepaid toggle */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Banknote size={14} className="text-txt-secondary" />
+          <span className="text-sm font-medium text-txt-primary">Pré-pago</span>
+        </div>
+        <button
+          role="switch"
+          aria-checked={isPrepaid}
+          onClick={() => {
+            setPrepaid(!isPrepaid)
+            // Reset demo state and go back to menu
+            resetOrders()
+            sessionStorage.removeItem('hero-seen')
+            window.location.href = '/'
+          }}
+          className={cn(
+            'relative w-10 h-[22px] rounded-full transition-colors',
+            isPrepaid ? 'bg-brand-fill' : 'bg-gray-300'
+          )}
+        >
+          <span
+            className={cn(
+              'absolute top-0.5 left-0.5 w-[18px] h-[18px] rounded-full bg-white shadow transition-transform',
+              isPrepaid && 'translate-x-[18px]'
+            )}
+          />
+        </button>
+      </div>
+
       {/* Multi-vendor toggle */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
