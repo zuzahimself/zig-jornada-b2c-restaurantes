@@ -29,19 +29,23 @@ interface MockContextValue {
   setMultiVendor: (v: boolean) => void
   isLoggedIn: boolean
   setLoggedIn: (v: boolean) => void
+  hasCpf: boolean
+  setHasCpf: (v: boolean) => void
+  hasEmail: boolean
+  setHasEmail: (v: boolean) => void
 }
 
 const MockContext = createContext<MockContextValue | null>(null)
 
-function loadDefaults(): { tableStatus: TableStatus; paidAmount: number; giftbackBalance: number; isMultiVendor: boolean; isLoggedIn: boolean } {
+function loadDefaults(): { tableStatus: TableStatus; paidAmount: number; giftbackBalance: number; isMultiVendor: boolean; isLoggedIn: boolean; hasCpf: boolean; hasEmail: boolean } {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) {
       const parsed = JSON.parse(stored)
-      return { tableStatus: 'open', paidAmount: 0, giftbackBalance: 1250, isMultiVendor: false, isLoggedIn: true, ...parsed }
+      return { tableStatus: 'open', paidAmount: 0, giftbackBalance: 1250, isMultiVendor: false, isLoggedIn: true, hasCpf: true, hasEmail: false, ...parsed }
     }
   } catch { /* ignore */ }
-  return { tableStatus: 'open', paidAmount: 0, giftbackBalance: 1250, isMultiVendor: false, isLoggedIn: true }
+  return { tableStatus: 'open', paidAmount: 0, giftbackBalance: 1250, isMultiVendor: false, isLoggedIn: true, hasCpf: true, hasEmail: false }
 }
 
 export function MockProvider({ children }: { children: ReactNode }) {
@@ -52,6 +56,8 @@ export function MockProvider({ children }: { children: ReactNode }) {
   const [giftbackBalance, setGiftbackBalanceState] = useState(defaults.giftbackBalance)
   const [isMultiVendor, setMultiVendorState] = useState(defaults.isMultiVendor)
   const [isLoggedIn, setLoggedInState] = useState(defaults.isLoggedIn)
+  const [hasCpf, setHasCpfState] = useState(defaults.hasCpf)
+  const [hasEmail, setHasEmailState] = useState(defaults.hasEmail)
   const cashbackRate = 0.05
 
   const persistAll = useCallback((vals: Record<string, unknown>) => {
@@ -113,6 +119,16 @@ export function MockProvider({ children }: { children: ReactNode }) {
     persistAll({ isLoggedIn: v })
   }, [persistAll])
 
+  const setHasCpf = useCallback((v: boolean) => {
+    setHasCpfState(v)
+    persistAll({ hasCpf: v })
+  }, [persistAll])
+
+  const setHasEmail = useCallback((v: boolean) => {
+    setHasEmailState(v)
+    persistAll({ hasEmail: v })
+  }, [persistAll])
+
   const recordPayment = useCallback((amount: number) => {
     setPaidAmountState((prev) => {
       const newPaid = prev + amount
@@ -139,7 +155,7 @@ export function MockProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <MockContext.Provider value={{ tableStatus, setTableStatus, paidAmount, setPaidAmount, tableOrders, addOrder, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance, cashbackRate, recordPayment, isMultiVendor, setMultiVendor, isLoggedIn, setLoggedIn }}>
+    <MockContext.Provider value={{ tableStatus, setTableStatus, paidAmount, setPaidAmount, tableOrders, addOrder, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance, cashbackRate, recordPayment, isMultiVendor, setMultiVendor, isLoggedIn, setLoggedIn, hasCpf, setHasCpf, hasEmail, setHasEmail }}>
       {children}
     </MockContext.Provider>
   )

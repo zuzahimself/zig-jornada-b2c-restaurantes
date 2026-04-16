@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, UtensilsCrossed, Coins, ChevronDown } from 'lucide-react'
+import { Check, UtensilsCrossed, Coins, ChevronDown, Mail } from 'lucide-react'
 import { SatisfactionSurvey } from '../components/SatisfactionSurvey'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
@@ -20,11 +20,18 @@ export function Success() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { cart, clearCart } = useCart()
-  const { user } = useAuth()
-  const { addOrder, giftbackBalance, setGiftbackBalance, recordPayment, tableOrders, paidAmount, tableStatus } = useMock()
+  const { user, updateUser } = useAuth()
+  const { addOrder, giftbackBalance, setGiftbackBalance, recordPayment, tableOrders, paidAmount, tableStatus, hasEmail } = useMock()
   const hasProcessed = useRef(false)
   const [showSurvey, setShowSurvey] = useState(false)
   const [showExtrato, setShowExtrato] = useState(false)
+  const [emailInput, setEmailInput] = useState('')
+  const [emailSaved, setEmailSaved] = useState(false)
+  const [emailSkipped, setEmailSkipped] = useState(false)
+
+  // User has email if mock says so OR user profile has one OR just saved one
+  const userHasEmail = hasEmail || !!user?.email || emailSaved
+  const userEmail = user?.email || (emailSaved ? emailInput : '')
 
   const isPaid = searchParams.has('total')
   const totalCents = Number(searchParams.get('total')) || 0
@@ -197,6 +204,70 @@ export function Success() {
                 Saldo total: R$ {formatPrice(giftbackBalance + cashbackEarned)}
               </p>
             </div>
+          </motion.div>
+        )}
+
+        {/* ── NF por email ── */}
+        {isPaid && !emailSkipped && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.4 }}
+            className="bg-white rounded-2xl px-5 py-4 mb-3"
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                style={{ backgroundColor: 'var(--color-brand-subtle)' }}
+              >
+                <Mail size={20} style={{ color: 'var(--color-brand-fill)' }} />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-semibold text-txt-primary">Nota fiscal</p>
+                {userHasEmail ? (
+                  <p className="text-[11px] text-txt-secondary mt-0.5">
+                    Será enviada para <span className="font-semibold text-txt-primary">{userEmail || 'seu email'}</span>
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-txt-tertiary mt-0.5">
+                    Informe seu email para receber
+                  </p>
+                )}
+              </div>
+            </div>
+            {!userHasEmail && (
+              <div className="mt-3">
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    placeholder="seu@email.com"
+                    className="flex-1 rounded-xl bg-surface-low border-2 border-border px-3 py-2 text-sm text-txt-primary placeholder:text-txt-tertiary focus:outline-none"
+                    onFocus={(e) => { e.target.style.borderColor = 'var(--color-brand-fill)' }}
+                    onBlur={(e) => { e.target.style.borderColor = '' }}
+                  />
+                  <button
+                    onClick={() => {
+                      if (emailInput.includes('@')) {
+                        updateUser({ email: emailInput })
+                        setEmailSaved(true)
+                      }
+                    }}
+                    disabled={!emailInput.includes('@')}
+                    className="px-4 py-2 rounded-xl text-xs font-bold text-on-brand bg-brand-fill disabled:opacity-40 transition-opacity"
+                  >
+                    OK
+                  </button>
+                </div>
+                <button
+                  onClick={() => setEmailSkipped(true)}
+                  className="w-full mt-2 py-1 text-[11px] font-medium text-txt-tertiary"
+                >
+                  Pular
+                </button>
+              </div>
+            )}
           </motion.div>
         )}
 

@@ -14,6 +14,7 @@ interface AuthContextValue {
   user: User | null
   isAuthenticated: boolean
   login: (user: User) => void
+  updateUser: (partial: Partial<User>) => void
   logout: () => void
 }
 
@@ -34,6 +35,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(u))
   }, [])
 
+  const updateUser = useCallback((partial: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return prev
+      const updated = { ...prev, ...partial }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+      return updated
+    })
+  }, [])
+
   const logout = useCallback(() => {
     setUser(null)
     localStorage.removeItem(STORAGE_KEY)
@@ -51,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, updateUser, logout }}>
       {children}
     </AuthContext.Provider>
   )

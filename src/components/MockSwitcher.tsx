@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChefHat, RotateCcw, Coins, Store, User } from 'lucide-react'
+import { ChefHat, RotateCcw, Coins, Store, User, CreditCard, Mail } from 'lucide-react'
 import { useMock, type TableStatus } from '../context/MockContext'
 import { cn, formatPrice } from '../lib/utils'
 
@@ -14,7 +14,7 @@ const SCENARIOS: { value: TableStatus; label: string }[] = [
 ]
 
 export function MockSwitcher({ onApply }: MockSwitcherProps) {
-  const { tableStatus, setTableStatus, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance, isMultiVendor, setMultiVendor, isLoggedIn, setLoggedIn } = useMock()
+  const { tableStatus, setTableStatus, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance, isMultiVendor, setMultiVendor, isLoggedIn, setLoggedIn, hasCpf, setHasCpf, hasEmail, setHasEmail } = useMock()
   const [local, setLocal] = useState<TableStatus>(tableStatus)
 
   function handleApply() {
@@ -67,6 +67,54 @@ export function MockSwitcher({ onApply }: MockSwitcherProps) {
             className={cn(
               'absolute top-0.5 left-0.5 w-[18px] h-[18px] rounded-full bg-white shadow transition-transform',
               isLoggedIn && 'translate-x-[18px]'
+            )}
+          />
+        </button>
+      </div>
+
+      {/* Has CPF toggle */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <CreditCard size={14} className="text-txt-secondary" />
+          <span className="text-sm font-medium text-txt-primary">Tem CPF</span>
+        </div>
+        <button
+          role="switch"
+          aria-checked={hasCpf}
+          onClick={() => setHasCpf(!hasCpf)}
+          className={cn(
+            'relative w-10 h-[22px] rounded-full transition-colors',
+            hasCpf ? 'bg-brand-fill' : 'bg-gray-300'
+          )}
+        >
+          <span
+            className={cn(
+              'absolute top-0.5 left-0.5 w-[18px] h-[18px] rounded-full bg-white shadow transition-transform',
+              hasCpf && 'translate-x-[18px]'
+            )}
+          />
+        </button>
+      </div>
+
+      {/* Has Email toggle */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Mail size={14} className="text-txt-secondary" />
+          <span className="text-sm font-medium text-txt-primary">Tem email</span>
+        </div>
+        <button
+          role="switch"
+          aria-checked={hasEmail}
+          onClick={() => setHasEmail(!hasEmail)}
+          className={cn(
+            'relative w-10 h-[22px] rounded-full transition-colors',
+            hasEmail ? 'bg-brand-fill' : 'bg-gray-300'
+          )}
+        >
+          <span
+            className={cn(
+              'absolute top-0.5 left-0.5 w-[18px] h-[18px] rounded-full bg-white shadow transition-transform',
+              hasEmail && 'translate-x-[18px]'
             )}
           />
         </button>

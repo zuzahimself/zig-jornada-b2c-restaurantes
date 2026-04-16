@@ -8,6 +8,14 @@ import { useMock, getTableTotal } from '../context/MockContext'
 import { MOCK_USER_CPF } from '../data/mockTableData'
 import { formatPrice, cn } from '../lib/utils'
 
+function formatCpf(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 11)
+  if (digits.length <= 3) return digits
+  if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`
+  if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`
+}
+
 type PaymentMethod = 'pix' | 'credit' | 'debit'
 
 const METHODS: { value: PaymentMethod; label: string; description: string; icon: typeof QrCode }[] = [
@@ -30,8 +38,8 @@ export function Payment() {
   const people = Number(searchParams.get('people')) || 1
 
   const { cart, totalCents } = useCart()
-  const { user } = useAuth()
-  const { paidAmount, tableOrders: mockTableOrders, giftbackBalance, cashbackRate } = useMock()
+  const { user, updateUser } = useAuth()
+  const { paidAmount, tableOrders: mockTableOrders, giftbackBalance, cashbackRate, hasCpf } = useMock()
   const userCpf = user?.cpf || MOCK_USER_CPF
 
   const [method, setMethod] = useState<PaymentMethod>('pix')
@@ -40,6 +48,10 @@ export function Payment() {
   const [serviceEnabled, setServiceEnabled] = useState(true)
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [cpfInput, setCpfInput] = useState('')
+
+  // Show CPF field if mock says user doesn't have CPF and user profile has no CPF
+  const needsCpf = !hasCpf && !user?.cpf
 
   const { subtotal, service, grandTotal, items } = useMemo(() => {
     if (mode === 'total' || mode === 'mine' || mode === 'split') {
@@ -79,6 +91,10 @@ export function Payment() {
   const cashbackEarned = Math.round(finalTotal * cashbackRate)
 
   function handlePay() {
+    // Save CPF if user just entered one
+    if (needsCpf && cpfInput.replace(/\D/g, '').length === 11) {
+      updateUser({ cpf: cpfInput.replace(/\D/g, '') })
+    }
     setProcessing(true)
     setError(null)
     setTimeout(() => {
@@ -352,6 +368,24 @@ export function Payment() {
             <span className="text-[11px] font-medium" style={{ color: 'var(--color-loyalty-gold)' }}>
               Você ganha R$ {formatPrice(cashbackEarned)} de giftback nesta compra
             </span>
+          </div>
+        )}
+
+        {/* CPF enrichment — only if user has no CPF */}
+        {needsCpf && (
+          <div className="px-5 py-4 border-t border-black/5">
+            <p className="text-xs font-semibold text-txt-primary mb-1">Informe seu CPF</p>
+            <p className="text-[11px] text-txt-tertiary mb-2">Para emitir a nota fiscal</p>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={cpfInput}
+              onChange={(e) => setCpfInput(formatCpf(e.target.value))}
+              placeholder="000.000.000-00"
+              className="w-full rounded-xl bg-surface-low border-2 border-border px-3 py-2.5 text-sm text-txt-primary placeholder:text-txt-tertiary focus:outline-none"
+              onFocus={(e) => { e.target.style.borderColor = 'var(--color-brand-fill)' }}
+              onBlur={(e) => { e.target.style.borderColor = '' }}
+            />
           </div>
         )}
 
