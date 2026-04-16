@@ -22,7 +22,8 @@ export function TableAccount() {
   const { tableStatus, paidAmount, tableOrders: mockTableOrders } = useMock()
   const [tab, setTab] = useState<Tab>('mine')
   const [showSplit, setShowSplit] = useState(false)
-  const [splitPeople, setSplitPeople] = useState(2)
+  const uniquePeopleCount = new Set(mockTableOrders.map((o) => o.userCpf)).size
+  const [splitPeople, setSplitPeople] = useState(Math.max(2, uniquePeopleCount))
 
   const userCpf = user?.cpf || MOCK_USER_CPF
   const myOrders = mockTableOrders.filter((o) => o.userCpf === userCpf)
@@ -67,12 +68,11 @@ export function TableAccount() {
             <span className="font-semibold text-txt-primary">R$ {formatPrice(tableTotal)}</span>
             {' '}(inclui 10% de serviço).
           </p>
-          <button
-            onClick={() => navigate('/')}
-            className="mt-4 px-6 py-3 rounded-pill text-sm font-bold text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform"
-          >
-            Novo pedido
-          </button>
+          <div className="mt-4 bg-surface-low rounded-xl px-4 py-3">
+            <p className="text-xs text-txt-secondary leading-relaxed">
+              Para fazer um novo pedido, escaneie o <span className="font-semibold text-txt-primary">QR code da mesa</span> novamente.
+            </p>
+          </div>
         </div>
       </div>
     )
@@ -232,6 +232,7 @@ export function TableAccount() {
           const mySubtotal = getTableTotal(myOrders)
           const myService = Math.round(mySubtotal * 0.1)
           const myTotal = mySubtotal + myService
+          // Divisão dinâmica: sempre baseada no saldo restante
           const perPerson = uniquePeople > 1 ? Math.ceil(remaining / uniquePeople) : remaining
 
           return (
@@ -278,6 +279,12 @@ export function TableAccount() {
                       <Plus size={18} />
                     </motion.button>
                   </div>
+                  {tableStatus === 'partially_paid' && (
+                    <p className="text-xs text-txt-tertiary text-center">
+                      Falta pagar{' '}
+                      <span className="font-semibold text-txt-secondary">R$ {formatPrice(remaining)}</span>
+                    </p>
+                  )}
                   <p className="text-sm text-txt-secondary text-center">
                     Cada pessoa paga{' '}
                     <span className="font-bold text-txt-primary">

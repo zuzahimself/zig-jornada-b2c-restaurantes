@@ -200,6 +200,29 @@ export function Success() {
           </motion.div>
         )}
 
+        {/* ── Table closed — re-scan notice ── */}
+        {isPaid && tableFullyPaid && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.85, duration: 0.4 }}
+            className="bg-white rounded-2xl px-5 py-5 mb-3 text-center"
+          >
+            <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3">
+              <Check size={24} className="text-emerald-600" />
+            </div>
+            <p className="text-sm font-bold text-txt-primary mb-1">Mesa encerrada!</p>
+            <p className="text-sm text-txt-secondary mb-3">
+              Obrigado pela visita. Toda a conta foi paga.
+            </p>
+            <div className="bg-surface-low rounded-xl px-4 py-3">
+              <p className="text-xs text-txt-secondary leading-relaxed">
+                Para fazer um novo pedido, escaneie o <span className="font-semibold text-txt-primary">QR code da mesa</span> novamente.
+              </p>
+            </div>
+          </motion.div>
+        )}
+
         {/* ── Remaining balance — accordion with extrato ── */}
         {isPaid && !tableFullyPaid && remainingOnTable > 0 && (
           <motion.div
@@ -302,19 +325,31 @@ export function Success() {
         </AnimatePresence>
       </div>
 
-      {/* ── Single primary CTA ── */}
+      {/* ── Primary CTA ── */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7, duration: 0.4 }}
         className="shrink-0 px-6 pb-8 pt-2 bg-surface-low"
       >
-        <button
-          onClick={() => navigate('/')}
-          className="w-full py-3 rounded-pill text-sm font-bold text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform"
-        >
-          Ver cardápio
-        </button>
+        {isPaid && tableFullyPaid ? (
+          <button
+            onClick={() => {
+              sessionStorage.removeItem('hero-seen')
+              navigate('/')
+            }}
+            className="w-full py-3 rounded-pill text-sm font-bold border border-brand-border text-brand-text hover:bg-brand-subtle active:scale-95 transition-transform"
+          >
+            Fechar
+          </button>
+        ) : (
+          <button
+            onClick={() => navigate('/')}
+            className="w-full py-3 rounded-pill text-sm font-bold text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform"
+          >
+            {isPaid ? 'Continuar pedindo' : 'Ver cardápio'}
+          </button>
+        )}
       </motion.div>
     </div>
   )

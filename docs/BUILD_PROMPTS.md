@@ -35,10 +35,10 @@
 | 14 | Vinculação CPF↔Pedido (CRM layer) | ✅ suficiente p/ demo (CPF vincula pedido; onboarding "bem-vindo de volta" = escopo produção) |
 | 15 | Modo pré-pago | ⬜ backlog stakeholder |
 | 16 | Visibilidade de todos os pedidos na mesa | ⬜ backlog stakeholder |
-| 17 | Pesquisa de satisfação — só clientes ativos | ⬜ backlog stakeholder |
+| 17 | Pesquisa de satisfação — redesign Zig | ✅ feito |
 | 18 | Nota fiscal por email pós-pagamento | ⬜ backlog stakeholder |
 | 19 | Enriquecimento de dados do cliente (CPF) | ⬜ backlog stakeholder |
-| 20 | Divisão dinâmica de conta | ⬜ backlog stakeholder |
+| 20 | Divisão dinâmica de conta | ✅ feito |
 | 21 | Fechamento automático de mesa + aviso re-scan | ⬜ backlog stakeholder |
 
 ---
@@ -329,13 +329,29 @@ Sequência de estados em o   - Animação de partículas ou confetti em --color-
      CTAs: "Ver conta" | "Continuar pedindo"
    Se totalmente paga: "Mesa fechada! Obrigado pela visita" com animação de conclusão
 
-4. Avaliação interna Zig (sempre exibir):
-   - Rating 1–5 estrelas
-   - Nota ≤ 3: campo de texto "O que podemos melhorar?"
-   - Nota ≥ 4: campo opcional "O que você mais gostou?"
-   - Dimensões colapsáveis: Produto, Serviço, Limpeza, Música
+4. Pesquisa de satisfação Zig (sempre exibir após pagamento):
+   Tudo num card único, sem etapas — scroll contínuo.
 
-5. Google Review (condicional — SÓ nota geral ≥ 4):
+   4a. Avaliação por dimensão (6 dimensões, 1–5 estrelas cada):
+       - Produto: "Não estava na temperatura ideal", "Não estava saboroso", "Não foi bem servido"
+       - Variedade: "Faltou o meu favorito", "Poucas opções"
+       - Serviço: "Atendimento ruim", "Atendimento lento"
+       - Preço: "Muito caro", "Custo benefício ruim"
+       - Música: "O som não estava bom", "Não gosto do gênero", "Não gostei da banda/DJ"
+       - Limpeza: "Banheiro sujo", "Ambiente sujo", "Talheres, pratos ou copos sujos"
+       Regra: nota ≤ 3 abre checkboxes com os motivos da dimensão. Nota 4–5 segue sem justificativa.
+
+   4b. NPS (1–10):
+       "De 1 a 10, qual a probabilidade de recomendar este local?"
+       Chips numéricos em linha. brand-fill no selecionado.
+
+   4c. Feedback aberto:
+       Textarea sempre visível ("Quer contar mais?"). Opcional.
+
+   4d. Submit:
+       CTA "Enviar respostas" — habilitado quando ≥ 1 dimensão tem rating.
+
+5. Google Review (condicional — média das dimensões ≥ 4 E NPS ≥ 9):
    "Que ótimo! Quer compartilhar no Google?"
    Botão "Avaliar no Google" (link externo) + "Agora não"
    Notas ≤ 3: sem redirecionamento — feedback fica interno.
@@ -619,12 +635,20 @@ Tela da mesa (/conta) deve mostrar todas as pessoas que pediram, não apenas o u
 - Novo: listar cada pessoa (nome/iniciais) com seus itens, mantendo privacidade de valores individuais
 - Considerar: avatar de cada pessoa, status dos itens por pessoa
 
-### 17. Pesquisa de satisfação — apenas clientes ativos
+### 17. Pesquisa de satisfação — redesign Zig
+**Status: ✅ feito**
 
-Manter a pesquisa como está hoje, porém garantir que só apareça para clientes que efetivamente consumiram (têm pedidos na mesa).
+Reescrito `SatisfactionSurvey.tsx` para capturar os mesmos dados do sistema Zig existente.
 
-- Não exibir survey para quem só escaneou o QR e não pediu nada
-- Validar: `tableOrders.some(order => order.userId === currentUser)`
+Estrutura (card único, sem etapas):
+1. **6 dimensões** (Produto, Variedade, Serviço, Preço, Música, Limpeza) — 1-5 estrelas cada
+   - Nota ≤ 3 → checkboxes "O que aconteceu?" com motivos específicos por dimensão
+   - Nota 4-5 → sem justificativa
+2. **NPS 1-10** — chips numéricos ("Recomendaria para amigos?")
+3. **Feedback aberto** — textarea sempre visível, opcional
+4. **Google Review** — pós-submit, aparece se média dimensões ≥ 4 E NPS ≥ 9
+
+Arquivo: `SatisfactionSurvey.tsx`
 
 ### 18. Nota fiscal por email pós-pagamento
 
@@ -644,14 +668,25 @@ Capturar CPF quando não temos — momento ideal: durante o pagamento ou pós-pa
 - Relacionado com Feature 14 (CRM layer)
 
 ### 20. Divisão dinâmica de conta
+**Status: ✅ feito**
 
-Corrigir lógica de "dividir em partes iguais" para recalcular após cada pagamento parcial.
+Regras de negócio implementadas:
 
-- Hoje: divide o total por N pessoas, valor fixo
-- Problema: quando a primeira pessoa paga, o restante deveria ser redividido entre os que faltam
-- Exemplo: conta de R$300 / 3 pessoas = R$100 cada. Pessoa 1 paga R$100. Sobram R$200 / 2 = R$100 cada (ok nesse caso, mas se alguém pagou valor diferente, quebra)
-- Implementar: divisão sempre baseada no saldo restante / pessoas que ainda não pagaram
-- Impacta: TableAccount.tsx, Payment.tsx
+1. **O split sempre divide o saldo restante** (`remaining = total - paidAmount`), nunca o total bruto
+2. **O stepper "Somos quantas pessoas?" inicializa com o número real de pessoas na mesa** (via `uniquePeopleCount`), não hardcoded 2
+3. **Após cada pagamento parcial, `recordPayment()` atualiza o `paidAmount`** no MockContext — ao voltar no TableAccount, `remaining` reflete o novo saldo e todos os valores recalculam
+4. **No split view com conta parcialmente paga, exibe "Falta pagar R$X"** acima do valor por pessoa, dando contexto
+5. **Payment mode `split`**: calcula `remaining / people`
+6. **Payment mode `total`**: calcula `remaining` direto
+7. **Payment mode `mine`**: calcula o total dos meus itens + serviço (independente do que já foi pago pela mesa — é "minha parte")
+
+Fluxo exemplo:
+- Conta R$300 (c/ serviço), 3 pessoas → split R$100 cada
+- Pessoa 1 paga R$100 → `paidAmount = 10000`, remaining = R$200
+- Pessoa 2 abre split → vê "Falta pagar R$200", stepper em 3, ajusta pra 2 → R$100 cada
+- Pessoa 2 paga → remaining = R$100 → Pessoa 3 paga o restante
+
+Arquivos: `TableAccount.tsx`, `Payment.tsx`, `MockContext.tsx` (`recordPayment`)
 
 ### 21. Fechamento automático de mesa + aviso de re-scan
 

@@ -49,9 +49,11 @@ export function Payment() {
       const sub = getTableTotal(orders)
       const svc = serviceEnabled ? Math.round(sub * SERVICE_RATE) : 0
       const grand = sub + svc
-      let final = mode === 'total' ? Math.max(0, grand - paidAmount) : grand
+      // Sempre considerar o que já foi pago no remaining
+      const remaining = Math.max(0, grand - paidAmount)
+      let final = mode === 'mine' ? grand : remaining
       if (mode === 'split') {
-        final = Math.ceil(Math.max(0, grand - paidAmount) / people)
+        final = Math.ceil(remaining / people)
       }
       const orderItems = orders.flatMap((o) =>
         o.items.map((i) => ({
