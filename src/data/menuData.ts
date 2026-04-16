@@ -10,33 +10,40 @@ const unsplash = (id: string, w = 700) =>
 export const bannerItems: BannerItem[] = [
   {
     id: 'b1',
+    type: 'dish',
     image: '/banner.png',
     label: 'Bowl de Açaí Premium',
     badge: '⭐ Destaque',
   },
   {
     id: 'b2',
+    type: 'loyalty',
+    image: '/cashback-banner.png',
+  },
+  {
+    id: 'b3',
+    type: 'dish',
     image: unsplash('photo-1568901346375-23c9450c58cd'),
     label: 'Gratinado Especial',
     badge: '🔥 Mais pedido',
   },
   {
-    id: 'b3',
-    image: unsplash('photo-1512621776951-a57141f2eefd'),
-    label: 'Salada Mana Fresh',
-    badge: '🌿 Fit & Saudável',
-  },
-  {
     id: 'b4',
-    image: unsplash('photo-1490645935967-10de6ba17061'),
-    label: 'Prato Fit do Chef',
-    badge: '💪 Low Carb',
+    type: 'event',
+    image: '/banner-happy-hour.png',
   },
   {
     id: 'b5',
+    type: 'dish',
     image: unsplash('photo-1565299624946-b28f40a0ae38'),
     label: 'Mana Burger',
     badge: '🍔 Novo',
+  },
+  {
+    id: 'b6',
+    type: 'ad',
+    imageUrl: unsplash('photo-1535958636474-b021ee887b13'),
+    linkUrl: 'https://example.com/promo-cerveja',
   },
 ]
 

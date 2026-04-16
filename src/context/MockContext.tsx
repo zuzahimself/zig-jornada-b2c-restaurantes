@@ -27,19 +27,21 @@ interface MockContextValue {
   recordPayment: (amount: number) => void
   isMultiVendor: boolean
   setMultiVendor: (v: boolean) => void
+  isLoggedIn: boolean
+  setLoggedIn: (v: boolean) => void
 }
 
 const MockContext = createContext<MockContextValue | null>(null)
 
-function loadDefaults(): { tableStatus: TableStatus; paidAmount: number; giftbackBalance: number; isMultiVendor: boolean } {
+function loadDefaults(): { tableStatus: TableStatus; paidAmount: number; giftbackBalance: number; isMultiVendor: boolean; isLoggedIn: boolean } {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) {
       const parsed = JSON.parse(stored)
-      return { tableStatus: 'open', paidAmount: 0, giftbackBalance: 1250, isMultiVendor: false, ...parsed }
+      return { tableStatus: 'open', paidAmount: 0, giftbackBalance: 1250, isMultiVendor: false, isLoggedIn: true, ...parsed }
     }
   } catch { /* ignore */ }
-  return { tableStatus: 'open', paidAmount: 0, giftbackBalance: 1250, isMultiVendor: false }
+  return { tableStatus: 'open', paidAmount: 0, giftbackBalance: 1250, isMultiVendor: false, isLoggedIn: true }
 }
 
 export function MockProvider({ children }: { children: ReactNode }) {
@@ -49,6 +51,7 @@ export function MockProvider({ children }: { children: ReactNode }) {
   const [tableOrders, setTableOrders] = useState<TableOrder[]>(initialOrders)
   const [giftbackBalance, setGiftbackBalanceState] = useState(defaults.giftbackBalance)
   const [isMultiVendor, setMultiVendorState] = useState(defaults.isMultiVendor)
+  const [isLoggedIn, setLoggedInState] = useState(defaults.isLoggedIn)
   const cashbackRate = 0.05
 
   const persistAll = useCallback((vals: Record<string, unknown>) => {
@@ -105,6 +108,11 @@ export function MockProvider({ children }: { children: ReactNode }) {
     persistAll({ isMultiVendor: v })
   }, [persistAll])
 
+  const setLoggedIn = useCallback((v: boolean) => {
+    setLoggedInState(v)
+    persistAll({ isLoggedIn: v })
+  }, [persistAll])
+
   const recordPayment = useCallback((amount: number) => {
     setPaidAmountState((prev) => {
       const newPaid = prev + amount
@@ -131,7 +139,7 @@ export function MockProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <MockContext.Provider value={{ tableStatus, setTableStatus, paidAmount, setPaidAmount, tableOrders, addOrder, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance, cashbackRate, recordPayment, isMultiVendor, setMultiVendor }}>
+    <MockContext.Provider value={{ tableStatus, setTableStatus, paidAmount, setPaidAmount, tableOrders, addOrder, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance, cashbackRate, recordPayment, isMultiVendor, setMultiVendor, isLoggedIn, setLoggedIn }}>
       {children}
     </MockContext.Provider>
   )

@@ -13,6 +13,7 @@ import { UpsellSheet } from '../components/UpsellSheet'
 import { WelcomeBanner } from '../components/WelcomeBanner'
 import { SearchOverlay } from '../components/SearchOverlay'
 import { VendorGrid } from '../components/VendorGrid'
+import { BannerCarousel, SlideContent } from '../components/BannerCarousel'
 import { bannerItems, categories, menuItems, suggestionItems, vendors } from '../data/menuData'
 import { useCart } from '../context/CartContext'
 import { useBrand } from '../context/BrandContext'
@@ -188,63 +189,18 @@ export function MenuHome() {
   const currentBanner = bannerItems[activeBanner]
 
   const carouselContent = (
-    <>
-      <AnimatePresence initial={false}>
-        <motion.img
-          key={activeBanner}
-          src={currentBanner.image}
-          alt={currentBanner.label}
-          className="absolute inset-0 w-full h-full object-cover"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
-          draggable={false}
-        />
-      </AnimatePresence>
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/5 to-transparent pointer-events-none" />
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={`badge-${activeBanner}`}
-          className="absolute top-3 right-3 glass-badge rounded-pill px-3 py-1 text-white text-xs font-semibold pointer-events-none"
-          initial={{ y: -12, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ delay: 0.15, duration: 0.35 }}
-        >
-          {currentBanner.badge}
-        </motion.div>
-      </AnimatePresence>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={`label-${activeBanner}`}
-          className="absolute bottom-4 left-4 right-4 text-white font-bold text-xl leading-tight font-display pointer-events-none"
-          initial={{ y: 16, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ delay: 0.1, duration: 0.4, ease: 'easeOut' }}
-        >
-          {currentBanner.label}
-        </motion.div>
-      </AnimatePresence>
-    </>
-  )
-
-  const paginationDots = (
-    <div className="flex items-center justify-center gap-1.5 mt-3">
-      {bannerItems.map((_, i) => (
-        <button
-          key={i}
-          aria-label={`Slide ${i + 1}`}
-          onClick={() => setActiveBanner(i)}
-          className="h-1.5 rounded-full transition-all duration-300"
-          style={{
-            backgroundColor: i === activeBanner ? 'var(--color-brand-fill)' : '#ececee',
-            width: i === activeBanner ? 16 : 6,
-          }}
-        />
-      ))}
-    </div>
+    <AnimatePresence initial={false}>
+      <motion.div
+        key={activeBanner}
+        className="absolute inset-0"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <SlideContent item={currentBanner} />
+      </motion.div>
+    </AnimatePresence>
   )
 
   // ── Render ──────────────────────────────────────────────────────────────
@@ -343,16 +299,8 @@ export function MenuHome() {
             </motion.div>
           </div>
         ) : (
-          /* ── NORMAL MODE: simple carousel card ── */
-          <div className="relative select-none px-4 pt-2 pb-4">
-            <div
-              className="relative w-full overflow-hidden rounded-2xl"
-              style={{ aspectRatio: '16/9' }}
-            >
-              {carouselContent}
-            </div>
-            {paginationDots}
-          </div>
+          /* ── NORMAL MODE: full interactive carousel ── */
+          <BannerCarousel items={bannerItems} />
         )}
 
         {/* ── Content (shared) ── */}

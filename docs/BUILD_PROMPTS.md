@@ -21,18 +21,18 @@
 |---|---|---|
 | 01 | Sistema de cores | ✅ feito |
 | 02 | Home do Cardápio | ✅ feito (+ hero landing com scroll morph, busca full-screen, header glass) |
-| 03 | Tela de Produto | ✅ feito (falta: sugestão de produtos relacionados) |
+| 03 | Tela de Produto | ✅ feito (+ sugestões de produtos relacionados, nutrição redesenhada) |
 | 04 | Carrinho | ✅ feito (cashback preview, shimmer no CTA, badge qtd+valor) |
 | 05 | Login / Auth | ✅ feito (CPF only, sem social login) |
 | 06 | Conta da Mesa | ✅ feito (botões de pagamento com valores, lógica solo/múltiplos) |
 | 07 | Pagamento | ✅ feito (dividir por igual, toggle serviço, loading, estados de erro) |
 | 08 | Sucesso + Loyalty + Avaliação | ✅ feito (survey, Google Review, accordion extrato, hierarquia de CTAs) |
-| 09 | Multi-vendor | ⬜ |
+| 09 | Multi-vendor | ✅ feito (food hall com 4 vendors, VendorBar, VendorGrid, navegação por âncoras) |
 | 10 | i18n (PT/EN/ES/FR) | ⬜ |
-| 11 | KDS / Acompanhamento real-time | ✅ parcial (mock manual via MockSwitcher, sem polling automático) |
-| 12 | QR Routing + Splash de entrada | ⬜ |
+| 11 | KDS / Acompanhamento real-time | ✅ suficiente p/ demo (mock manual via MockSwitcher; polling automático = escopo produção) |
+| 12 | QR Routing + Splash de entrada | ⏭️ escopo produção (não necessário para demo) |
 | 13 | Banner de programação / propaganda | ⬜ |
-| 14 | Vinculação CPF↔Pedido (CRM layer) | ✅ parcial (CPF vincula pedido, sem onboarding "bem-vindo de volta") |
+| 14 | Vinculação CPF↔Pedido (CRM layer) | ✅ suficiente p/ demo (CPF vincula pedido; onboarding "bem-vindo de volta" = escopo produção) |
 
 ---
 
@@ -51,20 +51,21 @@
 | G5 | **Estados de erro** (PIX expirado, cartão falhou) | ✅ feito | `Payment.tsx` |
 | G6 | **Pesquisa de satisfação** + Google Review | ✅ feito | `SatisfactionSurvey.tsx` + `Success.tsx` |
 | G7 | **Aguarda demais pagamentos** | ✅ feito | `Success.tsx` (accordion extrato) |
+| G11 | **Sugestão de produtos no ProductDetail** | ✅ feito | `UpsellSheet.tsx` + `ProductDetail.tsx` |
 
 ### Gaps restantes
 
 | # | Gap | Seção da jornada | Prioridade |
 |---|-----|-------------------|------------|
-| G11 | **Sugestão de produtos no ProductDetail** | Cardápio | Alta — melhora conversão |
-| G15 | **KDS polling automático** (simular evolução de status) | Acompanhamento | Média — dá vida ao demo |
+| G11 | ~~Sugestão de produtos no ProductDetail~~ | Cardápio | ✅ feito |
+| G8 | ~~Multi-vendor / Food Hall~~ | Cardápio | ✅ feito |
 | G13 | **Programação do local / banners contextuais** | Entrada | Média — enriquece carousel |
-| G9 | **QR Scan routing + Splash de entrada** | Entrada | Média — fecha jornada de entrada |
-| G8 | **Multi-vendor / Food Hall** | Cardápio | Alta complexidade |
-| G12 | **Social login (Google/Apple)** | Pedido | Baixa — mock já funciona |
-| G14 | **Mesa fecha automático** | Pós | Conceito backend |
-| G16 | **Onboarding CPF novo / "bem-vindo de volta"** | Login | Baixa |
 | G17 | **Consistência de botões** (design debt) | Transversal | Média — ver seção DETALHES PENDENTES |
+| G15 | ~~KDS polling automático~~ | Acompanhamento | ⏭️ escopo produção |
+| G9 | ~~QR Scan routing + Splash de entrada~~ | Entrada | ⏭️ escopo produção |
+| G12 | ~~Social login (Google/Apple)~~ | Pedido | ⏭️ escopo produção |
+| G14 | ~~Mesa fecha automático~~ | Pós | ⏭️ escopo produção |
+| G16 | ~~Onboarding CPF novo / "bem-vindo de volta"~~ | Login | ⏭️ escopo produção |
 
 ---
 

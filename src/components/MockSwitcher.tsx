@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChefHat, RotateCcw, Coins, Store } from 'lucide-react'
+import { ChefHat, RotateCcw, Coins, Store, User } from 'lucide-react'
 import { useMock, type TableStatus } from '../context/MockContext'
 import { cn, formatPrice } from '../lib/utils'
 
@@ -14,7 +14,7 @@ const SCENARIOS: { value: TableStatus; label: string }[] = [
 ]
 
 export function MockSwitcher({ onApply }: MockSwitcherProps) {
-  const { tableStatus, setTableStatus, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance, isMultiVendor, setMultiVendor } = useMock()
+  const { tableStatus, setTableStatus, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance, isMultiVendor, setMultiVendor, isLoggedIn, setLoggedIn } = useMock()
   const [local, setLocal] = useState<TableStatus>(tableStatus)
 
   function handleApply() {
@@ -43,6 +43,30 @@ export function MockSwitcher({ onApply }: MockSwitcherProps) {
             className={cn(
               'absolute top-0.5 left-0.5 w-[18px] h-[18px] rounded-full bg-white shadow transition-transform',
               isMultiVendor && 'translate-x-[18px]'
+            )}
+          />
+        </button>
+      </div>
+
+      {/* Logged-in toggle */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <User size={14} className="text-txt-secondary" />
+          <span className="text-sm font-medium text-txt-primary">Logado</span>
+        </div>
+        <button
+          role="switch"
+          aria-checked={isLoggedIn}
+          onClick={() => setLoggedIn(!isLoggedIn)}
+          className={cn(
+            'relative w-10 h-[22px] rounded-full transition-colors',
+            isLoggedIn ? 'bg-brand-fill' : 'bg-gray-300'
+          )}
+        >
+          <span
+            className={cn(
+              'absolute top-0.5 left-0.5 w-[18px] h-[18px] rounded-full bg-white shadow transition-transform',
+              isLoggedIn && 'translate-x-[18px]'
             )}
           />
         </button>

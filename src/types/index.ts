@@ -52,11 +52,38 @@ export interface Subcategory {
   name: string
 }
 
-export interface BannerItem {
+/** Discriminated union — each banner type has its own layout in the carousel */
+export type BannerItem =
+  | BannerDish
+  | BannerEvent
+  | BannerLoyalty
+  | BannerAd
+
+interface BannerBase {
   id: string
+}
+
+export interface BannerDish extends BannerBase {
+  type: 'dish'
   image: string
   label: string
   badge: string
+}
+
+export interface BannerEvent extends BannerBase {
+  type: 'event'
+  image: string
+}
+
+export interface BannerLoyalty extends BannerBase {
+  type: 'loyalty'
+  image: string
+}
+
+export interface BannerAd extends BannerBase {
+  type: 'ad'
+  imageUrl: string
+  linkUrl: string
 }
 
 export interface Vendor {
