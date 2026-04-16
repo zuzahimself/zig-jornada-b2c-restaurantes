@@ -31,8 +31,15 @@
 | 10 | i18n (PT/EN/ES/FR) | ⬜ |
 | 11 | KDS / Acompanhamento real-time | ✅ suficiente p/ demo (mock manual via MockSwitcher; polling automático = escopo produção) |
 | 12 | QR Routing + Splash de entrada | ⏭️ escopo produção (não necessário para demo) |
-| 13 | Banner de programação / propaganda | ⬜ |
+| 13 | Banner de programação / propaganda | ✅ feito (4 tipos: dish, event, loyalty 3 estados, ad; carousel interativo com drag) |
 | 14 | Vinculação CPF↔Pedido (CRM layer) | ✅ suficiente p/ demo (CPF vincula pedido; onboarding "bem-vindo de volta" = escopo produção) |
+| 15 | Modo pré-pago | ⬜ backlog stakeholder |
+| 16 | Visibilidade de todos os pedidos na mesa | ⬜ backlog stakeholder |
+| 17 | Pesquisa de satisfação — só clientes ativos | ⬜ backlog stakeholder |
+| 18 | Nota fiscal por email pós-pagamento | ⬜ backlog stakeholder |
+| 19 | Enriquecimento de dados do cliente (CPF) | ⬜ backlog stakeholder |
+| 20 | Divisão dinâmica de conta | ⬜ backlog stakeholder |
+| 21 | Fechamento automático de mesa + aviso re-scan | ⬜ backlog stakeholder |
 
 ---
 
@@ -59,8 +66,8 @@
 |---|-----|-------------------|------------|
 | G11 | ~~Sugestão de produtos no ProductDetail~~ | Cardápio | ✅ feito |
 | G8 | ~~Multi-vendor / Food Hall~~ | Cardápio | ✅ feito |
-| G13 | **Programação do local / banners contextuais** | Entrada | Média — enriquece carousel |
-| G17 | **Consistência de botões** (design debt) | Transversal | Média — ver seção DETALHES PENDENTES |
+| G13 | ~~Programação do local / banners contextuais~~ | Entrada | ✅ feito |
+| G17 | ~~Consistência de botões~~ (design debt) | Transversal | ✅ feito |
 | G15 | ~~KDS polling automático~~ | Acompanhamento | ⏭️ escopo produção |
 | G9 | ~~QR Scan routing + Splash de entrada~~ | Entrada | ⏭️ escopo produção |
 | G12 | ~~Social login (Google/Apple)~~ | Pedido | ⏭️ escopo produção |
@@ -573,23 +580,86 @@ Dados mockados por userId para demo:
 | 12 | QR routing + splash |
 | 13 | Banner de programação e propaganda |
 | 14 | CPF↔pedido (CRM layer) |
+| 15–21 | Backlog stakeholder (pré-pago, visibilidade mesa, NF, enriquecimento CPF, divisão dinâmica, fechamento mesa) |
 
 ---
 
 ## DETALHES PENDENTES
 
 ### Consistência de botões (design debt)
+**Status: ✅ resolvido**
 
-O app tem uma variedade grande de estilos de botão sem padronização clara:
-- Diferentes border-radius: `rounded-pill` (500px), `rounded-xl` (12px), `rounded-2xl` (16px)
-- Tamanhos inconsistentes: `py-2`, `py-2.5`, `py-3`, `py-3.5`
-- Pesos de fonte misturados: `font-medium` vs `font-bold` vs `font-semibold`
-- Cores de fundo: brand-fill, surface-low, white, rgba overlays, cinzas variados
-- Borders: alguns com borda, outros sem, espessuras diferentes
+Sistema de 3 variantes aplicado em todas as telas:
+1. **Primary** — `rounded-pill py-3 text-sm font-bold bg-brand-fill text-on-brand hover:bg-brand-fill-hover active:scale-95`
+2. **Secondary** — `rounded-pill py-3 text-sm font-bold border border-brand-border text-brand-text hover:bg-brand-subtle active:scale-95`
+3. **Ghost** — `py-2 text-sm font-medium text-brand-text`
 
-**Ação necessária:** definir um sistema de botões com 3 variantes claras:
-1. **Primary** — brand-fill, text-on-brand, rounded-pill, font-bold (1 por tela no máximo)
-2. **Secondary** — outline (border-brand-fill, text-brand-text, bg-transparent), rounded-pill
-3. **Ghost/Text** — sem fundo, sem borda, text-brand-text ou text-txt-tertiary
+Botões compostos (com badge de qtd + valor) mantêm a mesma base + `flex justify-between px-4/px-5`.
 
-Revisar todas as telas e unificar. Isso não é urgente, mas está criando ruído visual nas telas com múltiplos CTAs (ex: Success, Payment, Cart).
+---
+
+## BACKLOG — Notas de stakeholder (2026-04-16)
+
+> Itens levantados em conversa com stakeholder. Organizar em features/prompts quando forem priorizados.
+
+### 15. Modo pré-pago
+
+Fluxo alternativo ao pós-pago atual. Usuário escolhe produto → paga → só então o pedido é enviado à cozinha.
+
+- Impacta: Carrinho (Feature 04), Pagamento (Feature 07), KDS (Feature 11)
+- Decisão necessária: toggle por restaurante? Ou é um modo global?
+- UX: o carrinho vira um "checkout" — o CTA muda de "Enviar pedido" para "Pagar e enviar"
+- Pós-pagamento: redireciona para acompanhamento (KDS) em vez de /conta
+
+### 16. Visibilidade de todos os pedidos na mesa
+
+Tela da mesa (/conta) deve mostrar todas as pessoas que pediram, não apenas o usuário logado.
+
+- Hoje: toggle "Meus itens" / "Toda a mesa" — mas "Toda a mesa" não mostra breakdown por pessoa
+- Novo: listar cada pessoa (nome/iniciais) com seus itens, mantendo privacidade de valores individuais
+- Considerar: avatar de cada pessoa, status dos itens por pessoa
+
+### 17. Pesquisa de satisfação — apenas clientes ativos
+
+Manter a pesquisa como está hoje, porém garantir que só apareça para clientes que efetivamente consumiram (têm pedidos na mesa).
+
+- Não exibir survey para quem só escaneou o QR e não pediu nada
+- Validar: `tableOrders.some(order => order.userId === currentUser)`
+
+### 18. Nota fiscal por email pós-pagamento
+
+Após pagamento confirmado, informar ao cliente que a NF será enviada por email.
+
+- Tela de sucesso (/sucesso): adicionar aviso "Sua nota fiscal será enviada para seu email"
+- Se não temos o email: pedir nesse momento (campo inline, não bloqueante)
+- Considerar: integração futura com sistema de NF-e
+
+### 19. Enriquecimento de dados do cliente
+
+Capturar CPF quando não temos — momento ideal: durante o pagamento ou pós-pagamento.
+
+- Se usuário logou com social (Google/Apple) e não tem CPF vinculado: pedir CPF antes de confirmar pagamento
+- UX: campo inline com explicação "Precisamos do CPF para a nota fiscal"
+- Não bloqueante para o fluxo — mas incentivado
+- Relacionado com Feature 14 (CRM layer)
+
+### 20. Divisão dinâmica de conta
+
+Corrigir lógica de "dividir em partes iguais" para recalcular após cada pagamento parcial.
+
+- Hoje: divide o total por N pessoas, valor fixo
+- Problema: quando a primeira pessoa paga, o restante deveria ser redividido entre os que faltam
+- Exemplo: conta de R$300 / 3 pessoas = R$100 cada. Pessoa 1 paga R$100. Sobram R$200 / 2 = R$100 cada (ok nesse caso, mas se alguém pagou valor diferente, quebra)
+- Implementar: divisão sempre baseada no saldo restante / pessoas que ainda não pagaram
+- Impacta: TableAccount.tsx, Payment.tsx
+
+### 21. Fechamento automático de mesa + aviso de re-scan
+
+Quando a conta é 100% paga, a mesa fecha automaticamente.
+
+- Já existe parcialmente (estado `fully_paid`)
+- Adicionar: tela/modal claro de "Mesa encerrada"
+- Aviso importante: "Se quiser pedir algo a mais, escaneie o QR code novamente"
+- Esse aviso é crítico — sem ele o usuário fica perdido tentando pedir na mesa fechada
+- UX sugerida: tela de sucesso final com ícone de check + mensagem de encerramento + botão "Escanear QR" ou "Novo pedido"
+- Considerar: timer de expiração da sessão após mesa fechada
