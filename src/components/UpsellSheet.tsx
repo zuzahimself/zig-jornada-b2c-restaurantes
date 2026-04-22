@@ -70,26 +70,27 @@ export function UpsellSheet({ isOpen, excludeItemId, onClose, onViewCart }: Upse
             onClick={onClose}
           />
 
-          {/* Sheet */}
-          <motion.div
-            className="fixed inset-x-0 bottom-0 z-[71] bg-white rounded-t-2xl flex flex-col"
-            style={{ maxHeight: '65vh' }}
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 350, damping: 35 }}
-            drag="y"
-            dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={{ top: 0, bottom: 0.6 }}
-            onDragEnd={handleDragEnd}
-          >
-            {/* Handle */}
-            <div className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing">
-              <div className="w-10 h-1 rounded-full bg-border" />
-            </div>
+          {/* Sheet (mobile: bottom sheet, desktop: centered modal) */}
+          <div className="fixed inset-0 z-[71] pointer-events-none md:flex md:items-center md:justify-center">
+            <motion.div
+              className="pointer-events-auto absolute inset-x-0 bottom-0 bg-white rounded-t-2xl flex flex-col md:static md:rounded-2xl md:w-[480px] md:max-h-[75vh] md:shadow-2xl"
+              style={{ maxHeight: '65vh' }}
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 350, damping: 35 }}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.6 }}
+              onDragEnd={handleDragEnd}
+            >
+              {/* Handle (mobile only) */}
+              <div className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing md:hidden">
+                <div className="w-10 h-1 rounded-full bg-border" />
+              </div>
 
             {/* Title */}
-            <div className="px-4 pb-3">
+            <div className="px-4 pb-3 md:px-6 md:pt-4">
               <h2 className="font-display text-lg font-bold text-txt-primary">
                 Que tal adicionar?
               </h2>
@@ -123,7 +124,7 @@ export function UpsellSheet({ isOpen, excludeItemId, onClose, onViewCart }: Upse
             </div>
 
             {/* Footer buttons */}
-            <div className="border-t border-border px-4 pt-3 pb-5 flex flex-col gap-2">
+            <div className="border-t border-border px-4 pt-3 pb-5 flex flex-col gap-2 md:px-6 md:pt-4 md:pb-6">
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={handleViewCart}
@@ -146,7 +147,8 @@ export function UpsellSheet({ isOpen, excludeItemId, onClose, onViewCart }: Upse
                 Continuar comprando
               </button>
             </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>

@@ -117,7 +117,7 @@ export function Payment() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
     >
-      {/* Header */}
+      {/* Header (full-width) */}
       <div
         className="flex items-center gap-3 px-4 shrink-0"
         style={{ backgroundColor: 'var(--color-brand-subtle)', height: 'var(--header-height)' }}
@@ -129,7 +129,7 @@ export function Payment() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto page-container">
         {/* Total hero */}
         <div className="bg-white px-5 pt-6 pb-5 flex flex-col items-center">
           <p className="text-xs font-medium text-txt-tertiary uppercase tracking-wider mb-1">
@@ -398,15 +398,17 @@ export function Payment() {
       </div>
 
       {/* CTA */}
-      <div className="shrink-0 bg-white border-t border-black/5 px-5 pt-3 pb-6">
-        <motion.button
-          whileTap={{ scale: 0.97 }}
-          onClick={handlePay}
-          disabled={processing}
-          className="w-full py-3 rounded-pill text-sm font-bold text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform disabled:opacity-50"
-        >
-          Pagar R$ {formatPrice(finalTotal)}
-        </motion.button>
+      <div className="shrink-0 bg-white border-t border-black/5 px-5 pt-3 pb-6 page-container">
+        <div className="md:max-w-md md:mx-auto">
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={handlePay}
+            disabled={processing}
+            className="w-full py-3 rounded-pill text-sm font-bold text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform disabled:opacity-50"
+          >
+            Pagar R$ {formatPrice(finalTotal)}
+          </motion.button>
+        </div>
       </div>
 
       {/* Processing overlay */}

@@ -49,14 +49,15 @@ export function WelcomeBanner() {
             onClick={dismiss}
           />
 
-          {/* Sheet */}
-          <motion.div
-            className="fixed inset-x-0 bottom-0 z-[81] bg-white rounded-t-3xl overflow-hidden"
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 350, damping: 35 }}
-          >
+          {/* Sheet (mobile: bottom sheet, desktop: centered modal) */}
+          <div className="fixed inset-0 z-[81] pointer-events-none md:flex md:items-center md:justify-center">
+            <motion.div
+              className="pointer-events-auto absolute inset-x-0 bottom-0 bg-white rounded-t-3xl overflow-hidden md:static md:rounded-2xl md:w-[440px] md:shadow-2xl"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 350, damping: 35 }}
+            >
             {/* Close button */}
             <button
               onClick={dismiss}
@@ -149,7 +150,8 @@ export function WelcomeBanner() {
                 Continuar sem identificação
               </motion.button>
             </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>

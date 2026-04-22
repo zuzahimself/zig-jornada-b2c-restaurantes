@@ -71,26 +71,27 @@ export function CartSheet({ isOpen, onClose }: CartSheetProps) {
             onClick={onClose}
           />
 
-          {/* Sheet */}
-          <motion.div
-            className="fixed inset-x-0 bottom-0 z-[61] bg-white rounded-t-2xl flex flex-col"
-            style={{ maxHeight: '80vh' }}
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 350, damping: 35 }}
-            drag="y"
-            dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={{ top: 0, bottom: 0.6 }}
-            onDragEnd={handleDragEnd}
-          >
-            {/* Handle */}
-            <div className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing">
-              <div className="w-10 h-1 rounded-full bg-border" />
-            </div>
+          {/* Sheet (mobile: bottom sheet, desktop: centered modal) */}
+          <div className="fixed inset-0 z-[61] pointer-events-none md:flex md:items-center md:justify-center">
+            <motion.div
+              className="pointer-events-auto absolute inset-x-0 bottom-0 bg-white rounded-t-2xl flex flex-col md:static md:rounded-2xl md:w-[520px] md:max-h-[85vh] md:shadow-2xl"
+              style={{ maxHeight: '80vh' }}
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 350, damping: 35 }}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.6 }}
+              onDragEnd={handleDragEnd}
+            >
+              {/* Handle (mobile only) */}
+              <div className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing md:hidden">
+                <div className="w-10 h-1 rounded-full bg-border" />
+              </div>
 
             {/* Header */}
-            <div className="flex items-center justify-between px-4 pb-3 border-b border-border">
+            <div className="flex items-center justify-between px-4 pb-3 border-b border-border md:px-6 md:pt-5 md:pb-4">
               <h2 className="font-display text-lg font-bold text-txt-primary">Seu pedido</h2>
               <span className="px-3 py-1 rounded-pill text-xs font-semibold bg-brand-subtle text-brand-text">
                 Mesa 12
@@ -178,7 +179,7 @@ export function CartSheet({ isOpen, onClose }: CartSheetProps) {
                 </div>
 
                 {/* Footer */}
-                <div className="border-t border-border px-4 pt-3 pb-5">
+                <div className="border-t border-border px-4 pt-3 pb-5 md:px-6 md:pt-4 md:pb-6">
                   {isAuthenticated && cashbackPreview > 0 && (
                     <div className="flex items-center justify-center gap-1.5 pb-3">
                       <Coins size={13} style={{ color: 'var(--color-loyalty-gold)' }} />
@@ -219,7 +220,8 @@ export function CartSheet({ isOpen, onClose }: CartSheetProps) {
                 </div>
               </>
             )}
-          </motion.div>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>

@@ -63,7 +63,7 @@ export function Login() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full bg-white page-container">
       <motion.div
         className="flex-1 flex flex-col items-center px-6 pt-16 pb-8 overflow-y-auto"
         initial={{ opacity: 0, y: 30 }}

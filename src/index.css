@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Desktop layout containers ─────────────────────────────────────────── */
+@layer components {
+  .page-container {
+    @apply max-w-3xl mx-auto;
+  }
+}
+
 /* ─── Brand defaults (overwritten by applyBrandToDOM) ────────────────────── */
 :root {
   --color-brand-fill: #446A81;
@@ -110,8 +117,20 @@ html, body {
   overflow: hidden;
 }
 
+@media (min-width: 768px) {
+  #root {
+    max-width: 100%;
+  }
+}
+
 body {
   background: #111;
   font-family: 'Plus Jakarta Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+@media (min-width: 768px) {
+  body {
+    background: #ffffff;
+  }
 }

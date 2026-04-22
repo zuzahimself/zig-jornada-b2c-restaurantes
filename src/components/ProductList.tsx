@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import type { Category, MenuItem } from '../types'
 import { vendors } from '../data/menuData'
 import { formatPrice, cn } from '../lib/utils'
@@ -11,12 +11,15 @@ interface ProductListProps {
   stickyOffset?: number
 }
 
+const isDesktop = () => typeof window !== 'undefined' && window.innerWidth >= 768
+
 export function ProductList({
   categories,
   items,
   showVendor,
   stickyOffset = 140,
 }: ProductListProps) {
+  const location = useLocation()
   return (
     <>
       {categories.map((cat) => {
@@ -44,9 +47,9 @@ export function ProductList({
               <span className="text-sm text-txt-secondary">({catItems.length})</span>
             </div>
 
-            <div className="divide-y divide-black/5">
+            <div className="divide-y divide-black/5 md:divide-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 md:px-4">
               {ordered.map((item) => (
-                <Link key={item.id} to={`/produto/${item.id}`} className="block">
+                <Link key={item.id} to={`/produto/${item.id}`} state={isDesktop() ? { backgroundLocation: location } : undefined} className="block md:rounded-xl md:border md:border-black/5 md:overflow-hidden">
                   <ProductCard item={item} showVendor={showVendor} />
                 </Link>
               ))}
@@ -69,17 +72,23 @@ function ProductCard({ item, showVendor }: { item: MenuItem; showVendor?: boolea
     <div
       className={cn(
         'flex items-start gap-3 px-4 py-3',
+        'md:flex-col md:gap-0 md:p-0',
         item.isPromo && 'bg-brand-subtle'
       )}
     >
-      <div className="flex-1 min-w-0">
+      {/* Image — right side on mobile, top on desktop */}
+      <div className="shrink-0 w-[88px] h-[88px] rounded-md overflow-hidden order-2 md:order-none md:w-full md:h-[140px] md:rounded-none md:rounded-t-xl">
+        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+      </div>
+
+      <div className="flex-1 min-w-0 order-1 md:order-none md:p-3 md:flex md:flex-col md:min-h-[120px]">
         {item.badge && (
-          <div className="inline-flex items-center glass-badge rounded-pill px-3 py-1 text-white text-xs font-semibold mb-1 float-right ml-2">
+          <div className="inline-flex items-center glass-badge rounded-pill px-3 py-1 text-white text-xs font-semibold mb-1 float-right ml-2 md:float-none md:ml-0 md:self-start">
             {item.badge}
           </div>
         )}
 
-        <p className="text-sm font-bold text-txt-primary leading-snug mb-0.5">
+        <p className="text-sm font-bold text-txt-primary leading-snug mb-0.5 md:line-clamp-1">
           {item.name}
         </p>
 
@@ -90,11 +99,11 @@ function ProductCard({ item, showVendor }: { item: MenuItem; showVendor?: boolea
           </div>
         )}
 
-        <p className="text-xs text-txt-secondary leading-snug line-clamp-2 mb-2">
+        <p className="text-xs text-txt-secondary leading-snug line-clamp-2 mb-2 md:line-clamp-1">
           {item.description}
         </p>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 md:mt-auto">
           <div className="flex items-baseline gap-0.5 font-display">
             <span className="text-[10px] font-semibold" style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}>R$</span>
             <span className="text-base font-bold" style={{ color: 'var(--color-brand-700)' }}>{reais}</span>
@@ -104,10 +113,6 @@ function ProductCard({ item, showVendor }: { item: MenuItem; showVendor?: boolea
             <span className="text-xs text-txt-tertiary line-through">R${originalPrice}</span>
           )}
         </div>
-      </div>
-
-      <div className="shrink-0 w-[88px] h-[88px] rounded-md overflow-hidden">
-        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
       </div>
     </div>
   )

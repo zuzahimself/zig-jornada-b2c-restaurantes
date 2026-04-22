@@ -110,7 +110,7 @@ export function VendorMenu() {
 
   return (
     <motion.div
-      className="relative h-full bg-white"
+      className="relative h-full bg-white page-container"
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}

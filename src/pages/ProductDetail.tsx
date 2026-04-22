@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
 import { menuItems, categories } from '../data/menuData'
@@ -43,6 +43,8 @@ const CATEGORY_EMOJI: Record<string, string> = {
 export function ProductDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
+  const isModal = !!(location.state as { backgroundLocation?: Location } | null)?.backgroundLocation
   const { tokens } = useBrand()
   const { addItem } = useCart()
   const [selections, setSelections] = useState<Record<string, string[]>>({})
@@ -100,12 +102,21 @@ export function ProductDetail() {
   }, [])
 
   return (
-    <div className="flex flex-col h-full bg-white">
-      {/* Scrollable content */}
-      <main className="flex-1 overflow-y-auto">
+    <div className={isModal
+      ? 'fixed inset-0 z-50 flex items-center justify-center bg-black/50'
+      : 'flex flex-col h-full bg-white page-container'
+    }>
+      {/* Modal: click backdrop to go back */}
+      {isModal && <div className="absolute inset-0" onClick={() => navigate(-1)} />}
+      {/* Content card */}
+      <main className={isModal
+        ? 'relative w-[520px] max-h-[90vh] rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col'
+        : 'flex-1 overflow-y-auto'
+      }>
+        <div className={isModal ? 'flex-1 overflow-y-auto' : ''}>
         {/* Hero photo */}
         <motion.div
-          className="relative w-full h-[50vh] shrink-0"
+          className={`relative w-full shrink-0 ${isModal ? 'h-[240px]' : 'h-[50vh]'}`}
           initial={{ y: -40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.4, ease: 'easeOut' }}
@@ -244,51 +255,52 @@ export function ProductDetail() {
             </div>
           </div>
         )}
-      </main>
-
-      {/* Sticky footer */}
-      <div className="sticky bottom-0 z-50 bg-white border-t border-border px-4 pt-3 pb-5">
-        <div className="flex items-center justify-between gap-4">
-          {/* Price */}
-          <div className="flex items-baseline gap-0.5 font-display">
-            <span
-              className="text-xs font-semibold"
-              style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}
-            >
-              R$
-            </span>
-            <span className="text-2xl font-bold" style={{ color: 'var(--color-brand-700)' }}>
-              {reais}
-            </span>
-            <span
-              className="text-sm"
-              style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}
-            >
-              ,{centavos}
-            </span>
-          </div>
-
-          {/* Add button */}
-          <motion.button
-            whileTap={isDisabled ? undefined : { scale: 0.97 }}
-            disabled={isDisabled}
-            onClick={() => {
-              addItem(item, 1, hasCustomizations ? selections : undefined)
-              navigate(-1)
-            }}
-            className="flex-1 max-w-[220px] py-3 rounded-pill text-sm font-bold transition-opacity"
-            style={{
-              backgroundColor: brandFill,
-              color: buttonText,
-              opacity: isDisabled ? 0.4 : 1,
-            }}
-          >
-            {hasCustomizations
-              ? `Adicionar · R$ ${formatPrice(totalPrice)}`
-              : 'Adicionar'}
-          </motion.button>
         </div>
-      </div>
+
+        {/* Sticky footer */}
+        <div className="sticky bottom-0 z-50 bg-white border-t border-border px-4 pt-3 pb-5 md:px-6 md:py-4">
+          <div className="flex items-center justify-between gap-4">
+            {/* Price */}
+            <div className="flex items-baseline gap-0.5 font-display">
+              <span
+                className="text-xs font-semibold"
+                style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}
+              >
+                R$
+              </span>
+              <span className="text-2xl font-bold" style={{ color: 'var(--color-brand-700)' }}>
+                {reais}
+              </span>
+              <span
+                className="text-sm"
+                style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}
+              >
+                ,{centavos}
+              </span>
+            </div>
+
+            {/* Add button */}
+            <motion.button
+              whileTap={isDisabled ? undefined : { scale: 0.97 }}
+              disabled={isDisabled}
+              onClick={() => {
+                addItem(item, 1, hasCustomizations ? selections : undefined)
+                navigate(-1)
+              }}
+              className="flex-1 max-w-[220px] py-3 rounded-pill text-sm font-bold transition-opacity"
+              style={{
+                backgroundColor: brandFill,
+                color: buttonText,
+                opacity: isDisabled ? 0.4 : 1,
+              }}
+            >
+              {hasCustomizations
+                ? `Adicionar · R$ ${formatPrice(totalPrice)}`
+                : 'Adicionar'}
+            </motion.button>
+          </div>
+        </div>
+      </main>
 
     </div>
   )

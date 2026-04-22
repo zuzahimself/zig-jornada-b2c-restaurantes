@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Search, X } from 'lucide-react'
 import { menuItems, categories, vendors } from '../data/menuData'
@@ -15,6 +15,7 @@ interface SearchOverlayProps {
 
 export function SearchOverlay({ isOpen, onClose, onCategorySelect }: SearchOverlayProps) {
   const navigate = useNavigate()
+  const location = useLocation()
   const { isMultiVendor } = useMock()
   const inputRef = useRef<HTMLInputElement>(null)
   const [query, setQuery] = useState('')
@@ -51,7 +52,8 @@ export function SearchOverlay({ isOpen, onClose, onCategorySelect }: SearchOverl
 
   function handleItemTap(item: MenuItem) {
     onClose()
-    navigate(`/produto/${item.id}`)
+    const isDesktop = window.innerWidth >= 768
+    navigate(`/produto/${item.id}`, isDesktop ? { state: { backgroundLocation: location } } : undefined)
   }
 
   function handleCategoryTap(id: string) {

@@ -229,8 +229,8 @@ export function MenuHome() {
           onHeightChange={onHeaderHeight}
         />
 
-        {!heroSeen ? (
-          /* ── HERO MODE: morph zone ── */
+        {!heroSeen && typeof window !== 'undefined' && window.innerWidth < 768 ? (
+          /* ── HERO MODE: morph zone (mobile only) ── */
           <div style={{ marginTop: -headerHeight, height: wrapperHeight }}>
             <motion.div
               className="sticky top-0 z-40 will-change-transform flex flex-col"
@@ -300,32 +300,37 @@ export function MenuHome() {
           </div>
         ) : (
           /* ── NORMAL MODE: full interactive carousel ── */
-          <BannerCarousel items={bannerItems} />
+          <div className="page-container">
+            <BannerCarousel items={bannerItems} />
+          </div>
         )}
 
         {/* ── Content (shared) ── */}
         <div className="relative">
           <div className="relative z-10">
             {isMultiVendor && (
-              <VendorGrid vendors={vendors} />
+              <div className="page-container">
+                <VendorGrid vendors={vendors} />
+              </div>
             )}
 
-            <CategoryNav
-              categories={categories}
-              activeCategory={activeCategory}
-              onCategoryChange={scrollToCategory}
-              scrolled={scrolled}
-              stickyTop={headerHeight}
-            />
+            <div className="page-container">
+              <CategoryNav
+                categories={categories}
+                activeCategory={activeCategory}
+                onCategoryChange={scrollToCategory}
+                scrolled={scrolled}
+                stickyTop={headerHeight}
+              />
+              <SuggestionSection items={suggestionItems} />
 
-            <SuggestionSection items={suggestionItems} />
-
-            <ProductList
-              categories={categories}
-              items={menuItems}
-              showVendor={isMultiVendor}
-              stickyOffset={stickyOffset}
-            />
+              <ProductList
+                categories={categories}
+                items={menuItems}
+                showVendor={isMultiVendor}
+                stickyOffset={stickyOffset}
+              />
+            </div>
           </div>
         </div>
       </main>

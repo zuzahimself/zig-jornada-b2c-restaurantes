@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import type { MenuItem } from '../types'
 import { formatPrice } from '../lib/utils'
 
@@ -6,7 +6,10 @@ interface SuggestionSectionProps {
   items: MenuItem[]
 }
 
+const isDesktop = () => typeof window !== 'undefined' && window.innerWidth >= 768
+
 export function SuggestionSection({ items }: SuggestionSectionProps) {
+  const location = useLocation()
   return (
     <section className="py-4">
       <h2 className="px-4 mb-3 text-xl font-bold font-display" style={{ color: 'var(--color-brand-500)' }}>
@@ -15,7 +18,7 @@ export function SuggestionSection({ items }: SuggestionSectionProps) {
 
       <div className="flex overflow-x-auto no-scrollbar px-4 gap-3 pb-1">
         {items.map((item) => (
-          <Link key={item.id} to={`/produto/${item.id}`}>
+          <Link key={item.id} to={`/produto/${item.id}`} state={isDesktop() ? { backgroundLocation: location } : undefined}>
             <SuggestionCard item={item} />
           </Link>
         ))}

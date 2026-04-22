@@ -45,21 +45,23 @@ export function TableAccount() {
   if (tableStatus === 'fully_paid') {
     return (
       <div className="flex flex-col h-full bg-white">
-        {/* Header */}
+        {/* Header (full-width) */}
         <div
           className="flex items-center gap-3 px-4 shrink-0"
           style={{ backgroundColor: 'var(--color-brand-subtle)', height: 'var(--header-height)' }}
         >
-          <button onClick={() => navigate(-1)} className="text-brand-text">
-            <ArrowLeft size={20} />
-          </button>
-          <span className="text-sm font-bold text-brand-text flex-1">Mesa 12</span>
-          <span className={cn('text-[11px] font-semibold px-2 py-0.5 rounded-full', statusPill.className)}>
-            {statusPill.label}
-          </span>
+          <div className="page-container flex items-center gap-3 w-full">
+            <button onClick={() => navigate(-1)} className="text-brand-text">
+              <ArrowLeft size={20} />
+            </button>
+            <span className="text-sm font-bold text-brand-text flex-1">Mesa 12</span>
+            <span className={cn('text-[11px] font-semibold px-2 py-0.5 rounded-full', statusPill.className)}>
+              {statusPill.label}
+            </span>
+          </div>
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center">
+        <div className="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center page-container">
           <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center">
             <CheckCircle2 size={32} className="text-emerald-600" />
           </div>
@@ -86,19 +88,24 @@ export function TableAccount() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
     >
-      {/* Header */}
+      {/* Header (full-width) */}
       <div
         className="flex items-center gap-3 px-4 shrink-0"
         style={{ backgroundColor: 'var(--color-brand-subtle)', height: 'var(--header-height)' }}
       >
-        <button onClick={() => navigate(-1)} className="text-brand-text">
-          <ArrowLeft size={20} />
-        </button>
-        <span className="text-sm font-bold text-brand-text flex-1">Mesa 12</span>
-        <span className={cn('text-[11px] font-semibold px-2 py-0.5 rounded-full', statusPill.className)}>
-          {statusPill.label}
-        </span>
+        <div className="page-container flex items-center gap-3 w-full">
+          <button onClick={() => navigate(-1)} className="text-brand-text">
+            <ArrowLeft size={20} />
+          </button>
+          <span className="text-sm font-bold text-brand-text flex-1">Mesa 12</span>
+          <span className={cn('text-[11px] font-semibold px-2 py-0.5 rounded-full', statusPill.className)}>
+            {statusPill.label}
+          </span>
+        </div>
       </div>
+
+      {/* Content (contained) */}
+      <div className="flex-1 flex flex-col overflow-hidden page-container">
 
       {/* Segmented toggle */}
       <div className="px-4 pt-4 pb-2">
@@ -459,6 +466,7 @@ export function TableAccount() {
             </AnimatePresence>
           )
         })()}
+      </div>
       </div>
     </motion.div>
   )

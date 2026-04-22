@@ -129,7 +129,7 @@ export function Success() {
 
   return (
     <div className="flex flex-col h-full bg-surface-low">
-      <div className="flex-1 overflow-y-auto px-6 py-8">
+      <div className="flex-1 overflow-y-auto px-6 py-8 page-container">
         {/* ── Confirmation header ── */}
         <div className="flex flex-col items-center mb-8">
           <motion.div
@@ -424,8 +424,9 @@ export function Success() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7, duration: 0.4 }}
-        className="shrink-0 px-6 pb-8 pt-2 bg-surface-low"
+        className="shrink-0 w-full px-6 pb-8 pt-2 bg-surface-low page-container"
       >
+        <div className="w-full md:max-w-md md:mx-auto">
         {isPaid && tableFullyPaid ? (
           <button
             onClick={() => {
@@ -444,6 +445,7 @@ export function Success() {
             {isPaid ? 'Continuar pedindo' : 'Ver cardápio'}
           </button>
         )}
+        </div>
       </motion.div>
     </div>
   )
