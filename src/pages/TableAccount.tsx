@@ -50,7 +50,7 @@ export function TableAccount() {
           className="flex items-center gap-3 px-4 shrink-0"
           style={{ backgroundColor: 'var(--color-brand-subtle)', height: 'var(--header-height)' }}
         >
-          <div className="page-container flex items-center gap-3 w-full">
+          <div className="max-w-5xl mx-auto flex items-center gap-3 w-full">
             <button onClick={() => navigate(-1)} className="text-brand-text">
               <ArrowLeft size={20} />
             </button>
@@ -61,7 +61,7 @@ export function TableAccount() {
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center page-container">
+        <div className="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center max-w-5xl mx-auto">
           <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center">
             <CheckCircle2 size={32} className="text-emerald-600" />
           </div>
@@ -93,7 +93,7 @@ export function TableAccount() {
         className="flex items-center gap-3 px-4 shrink-0"
         style={{ backgroundColor: 'var(--color-brand-subtle)', height: 'var(--header-height)' }}
       >
-        <div className="page-container flex items-center gap-3 w-full">
+        <div className="max-w-5xl mx-auto flex items-center gap-3 w-full">
           <button onClick={() => navigate(-1)} className="text-brand-text">
             <ArrowLeft size={20} />
           </button>
@@ -105,7 +105,7 @@ export function TableAccount() {
       </div>
 
       {/* Content (contained) */}
-      <div className="flex-1 flex flex-col overflow-hidden page-container">
+      <div className="flex-1 flex flex-col overflow-hidden w-full max-w-5xl mx-auto">
 
       {/* Segmented toggle */}
       <div className="px-4 pt-4 pb-2">
