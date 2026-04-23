@@ -237,6 +237,56 @@
 
 ---
 
+## Parte 10 — Erro de Login (OAuth)
+
+### 10.1 Simular falha Apple
+- Ir ao **/login** (desligar toggle "Logado" se necessário)
+- Clicar **"Entrar com Apple"**
+- Tela de erro dedicada: ícone de alerta, mensagem, código de erro (AUTH_APPLE_TIMEOUT)
+- CTAs: "Tentar novamente" (volta pro login), "Usar outro método", "Voltar ao cardápio"
+
+### 10.2 Login que funciona
+- Clicar **"Entrar com Google"** → login funciona normalmente
+- Ou preencher nome + CPF → "Continuar"
+
+---
+
+## Parte 11 — Modos de Jornada
+
+### 11.1 Modo "Só cardápio" (menuOnly)
+- Drawer → MockSwitcher → seção "Modo da jornada" → **Só cardápio**
+- App reseta e volta ao cardápio
+- Mostrar: cardápio completo, busca, categorias — tudo funciona
+- Clicar num produto → **sem botão "Adicionar"** (somente visualização)
+- **Sem BottomBar**, sem carrinho, sem pagamento
+- Caso de uso: restaurante que divulga cardápio no Instagram/WhatsApp
+
+### 11.2 Modo "Só pagamento" (paymentOnly)
+- Drawer → MockSwitcher → **Só pagamento**
+- App reseta → tela de **identificação** (Mesa 12)
+- Toggle entre CPF e Nº Comanda
+- Digitar CPF (11 dígitos) → "Ver minha conta"
+- Redireciona pra **Conta da Mesa** → jornada de pagamento normal
+- **Sem cardápio**, sem "Ver cardápio" nos CTAs
+- Caso de uso: pedido feito via garçom, pagamento digital na mesa
+
+### 11.3 Voltar ao modo completo
+- Drawer → **Completo** → tudo volta ao normal
+
+---
+
+## Parte 12 — Desktop Responsivo ⏭️
+
+### 12.1 Redimensionar janela
+- Alargar o browser pra >768px
+- **Header**: se expande full-width, conteúdo centralizado
+- **Cards de produto**: viram grid 2-3 colunas com layout vertical (foto em cima)
+- **ProductDetail**: abre como **modal overlay** sobre o cardápio (com backdrop escuro)
+- **CartSheet, UpsellSheet, WelcomeBanner**: viram modais centralizados (não bottom sheets)
+- Conteúdo das telas internas (Payment, TableAccount, Success, Login) usa largura confortável (max-w-5xl)
+
+---
+
 ## Checklist rápido de features (pra não esquecer nada)
 
 - [ ] Hero morph animation
@@ -264,3 +314,7 @@
 - [ ] Modo pré-pago
 - [ ] Food Hall (multi-vendor)
 - [ ] White-label (brand switcher)
+- [ ] Erro de login Apple (tela dedicada)
+- [ ] Modo "Só cardápio" (view-only, sem carrinho)
+- [ ] Modo "Só pagamento" (identificação CPF/comanda → conta → pagamento)
+- [ ] Desktop responsivo (modais, grid, header full-width)

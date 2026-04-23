@@ -23,8 +23,8 @@
 | 02 | Home do Cardápio | ✅ feito (+ hero landing com scroll morph, busca full-screen, header glass) |
 | 03 | Tela de Produto | ✅ feito (+ sugestões de produtos relacionados, nutrição redesenhada) |
 | 04 | Carrinho | ✅ feito (cashback preview, shimmer no CTA, badge qtd+valor) |
-| 05 | Login / Auth | ✅ feito (CPF only, sem social login) |
-| 06 | Conta da Mesa | ✅ feito (botões de pagamento com valores, lógica solo/múltiplos) |
+| 05 | Login / Auth | ✅ feito (CPF + social login mockado; Apple simula falha OAuth com tela de erro dedicada) |
+| 06 | Conta da Mesa | ✅ feito (botões de pagamento com valores, lógica solo/múltiplos, extrato com pagamentos) |
 | 07 | Pagamento | ✅ feito (dividir por igual, toggle serviço, loading, estados de erro) |
 | 08 | Sucesso + Loyalty + Avaliação | ✅ feito (survey, Google Review, accordion extrato, hierarquia de CTAs) |
 | 09 | Multi-vendor | ✅ feito (food hall com 4 vendors, VendorBar, VendorGrid, navegação por âncoras) |
@@ -33,13 +33,16 @@
 | 12 | QR Routing + Splash de entrada | ⏭️ escopo produção (não necessário para demo) |
 | 13 | Banner de programação / propaganda | ✅ feito (4 tipos: dish, event, loyalty 3 estados, ad; carousel interativo com drag) |
 | 14 | Vinculação CPF↔Pedido (CRM layer) | ✅ suficiente p/ demo (CPF vincula pedido; onboarding "bem-vindo de volta" = escopo produção) |
-| 15 | Modo pré-pago | ⬜ backlog stakeholder |
-| 16 | Visibilidade de todos os pedidos na mesa | ⬜ backlog stakeholder |
+| 15 | Modo pré-pago | ✅ feito (toggle no MockSwitcher, CTA "Pagar e enviar", Success "Pago e enviado!") |
+| 16 | Visibilidade de todos os pedidos na mesa | ✅ feito (tab "Toda a mesa" com avatares por pessoa, extrato completo) |
 | 17 | Pesquisa de satisfação — redesign Zig | ✅ feito |
-| 18 | Nota fiscal por email pós-pagamento | ⬜ backlog stakeholder |
-| 19 | Enriquecimento de dados do cliente (CPF) | ⬜ backlog stakeholder |
+| 18 | Nota fiscal por email pós-pagamento | ✅ feito (campo inline no Success, "Pular" disponível) |
+| 19 | Enriquecimento de dados do cliente (CPF) | ✅ feito (campo inline no Payment quando !hasCpf) |
 | 20 | Divisão dinâmica de conta | ✅ feito |
-| 21 | Fechamento automático de mesa + aviso re-scan | ⬜ backlog stakeholder |
+| 21 | Fechamento automático de mesa + aviso re-scan | ✅ feito (empty state "Mesa encerrada" + aviso QR) |
+| 22 | Modos de jornada (full / menuOnly / paymentOnly) | ✅ feito (toggle no MockSwitcher, rotas condicionais, tela Identify para paymentOnly) |
+| 23 | Tela de erro de login (OAuth) | ✅ feito (Apple simula falha, tela dedicada com retry) |
+| 24 | Layout responsivo desktop | ✅ feito (modais centralizados, grid de produtos, header full-width, max-w-5xl) |
 
 ---
 
@@ -596,7 +599,8 @@ Dados mockados por userId para demo:
 | 12 | QR routing + splash |
 | 13 | Banner de programação e propaganda |
 | 14 | CPF↔pedido (CRM layer) |
-| 15–21 | Backlog stakeholder (pré-pago, visibilidade mesa, NF, enriquecimento CPF, divisão dinâmica, fechamento mesa) |
+| 15–21 | Stakeholder features — todas implementadas |
+| 22–24 | Modos de jornada, erro OAuth, desktop responsive |
 
 ---
 
