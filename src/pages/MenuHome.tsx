@@ -29,7 +29,8 @@ export function MenuHome() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { totalCents, itemCount, openCartAfterAdd, setOpenCartAfterAdd, lastAddedImage, clearLastAdded } = useCart()
   const { scale } = useBrand()
-  const { isMultiVendor } = useMock()
+  const { isMultiVendor, journeyMode } = useMock()
+  const isMenuOnly = journeyMode === 'menuOnly'
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [cartSheetOpen, setCartSheetOpen] = useState(false)
@@ -335,8 +336,8 @@ export function MenuHome() {
         </div>
       </main>
 
-      {/* Bottom bar */}
-      {heroSeen ? (
+      {/* Bottom bar — hidden in menuOnly */}
+      {!isMenuOnly && (heroSeen ? (
         <div className="absolute bottom-0 left-0 right-0 z-50">
           <BottomBar
             itemCount={itemCount}
@@ -355,18 +356,22 @@ export function MenuHome() {
             onViewOrder={() => setCartSheetOpen(true)}
           />
         </motion.div>
-      )}
+      ))}
 
-      <CartSheet isOpen={cartSheetOpen} onClose={() => setCartSheetOpen(false)} />
-      <FlyingCartItem image={flyingImage} onComplete={handleFlyComplete} />
-      <UpsellSheet
-        isOpen={showUpsell}
-        onClose={() => setShowUpsell(false)}
-        onViewCart={() => {
-          setShowUpsell(false)
-          setTimeout(() => setCartSheetOpen(true), 200)
-        }}
-      />
+      {!isMenuOnly && (
+        <>
+          <CartSheet isOpen={cartSheetOpen} onClose={() => setCartSheetOpen(false)} />
+          <FlyingCartItem image={flyingImage} onComplete={handleFlyComplete} />
+          <UpsellSheet
+            isOpen={showUpsell}
+            onClose={() => setShowUpsell(false)}
+            onViewCart={() => {
+              setShowUpsell(false)
+              setTimeout(() => setCartSheetOpen(true), 200)
+            }}
+          />
+        </>
+      )}
       <WelcomeBanner />
       <SearchOverlay
         isOpen={searchOpen}

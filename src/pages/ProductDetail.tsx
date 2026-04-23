@@ -6,6 +6,7 @@ import { menuItems, categories } from '../data/menuData'
 import { formatPrice } from '../lib/utils'
 import { useBrand } from '../context/BrandContext'
 import { useCart } from '../context/CartContext'
+import { useMock } from '../context/MockContext'
 import { getTextOnBackground } from '../lib/colorSystem'
 import { ProductCustomizer } from '../components/ProductCustomizer'
 
@@ -47,6 +48,8 @@ export function ProductDetail() {
   const isModal = !!(location.state as { backgroundLocation?: Location } | null)?.backgroundLocation
   const { tokens } = useBrand()
   const { addItem } = useCart()
+  const { journeyMode } = useMock()
+  const isMenuOnly = journeyMode === 'menuOnly'
   const [selections, setSelections] = useState<Record<string, string[]>>({})
 
   const item = menuItems.find((i) => i.id === id)
@@ -258,6 +261,7 @@ export function ProductDetail() {
         </div>
 
         {/* Sticky footer */}
+        {!isMenuOnly && (
         <div className="sticky bottom-0 z-50 bg-white border-t border-border px-4 pt-3 pb-5 md:px-6 md:py-4">
           <div className="flex items-center justify-between gap-4">
             {/* Price */}
@@ -300,6 +304,7 @@ export function ProductDetail() {
             </motion.button>
           </div>
         </div>
+        )}
       </main>
 
     </div>

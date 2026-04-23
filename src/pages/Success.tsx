@@ -21,7 +21,7 @@ export function Success() {
   const [searchParams] = useSearchParams()
   const { cart, clearCart } = useCart()
   const { user, updateUser } = useAuth()
-  const { addOrder, giftbackBalance, setGiftbackBalance, recordPayment, tableOrders, paidAmount, tableStatus, hasEmail } = useMock()
+  const { addOrder, giftbackBalance, setGiftbackBalance, recordPayment, tableOrders, paidAmount, tableStatus, hasEmail, journeyMode } = useMock()
   const hasProcessed = useRef(false)
   const [showSurvey, setShowSurvey] = useState(false)
   const [showExtrato, setShowExtrato] = useState(false)
@@ -129,7 +129,7 @@ export function Success() {
 
   return (
     <div className="flex flex-col h-full bg-surface-low">
-      <div className="flex-1 overflow-y-auto px-6 py-8 page-container">
+      <div className="flex-1 overflow-y-auto px-6 py-8 w-full max-w-5xl mx-auto">
         {/* ── Confirmation header ── */}
         <div className="flex flex-col items-center mb-8">
           <motion.div
@@ -206,7 +206,7 @@ export function Success() {
         </motion.div>
 
         {/* ── Cashback earned ── */}
-        {isPaid && cashbackEarned > 0 && (
+        {isPaid && cashbackEarned > 0 && journeyMode !== 'menuOnly' && (
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -424,7 +424,7 @@ export function Success() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7, duration: 0.4 }}
-        className="shrink-0 w-full px-6 pb-8 pt-2 bg-surface-low page-container"
+        className="shrink-0 w-full px-6 pb-8 pt-2 bg-surface-low w-full max-w-5xl mx-auto"
       >
         <div className="w-full md:max-w-md md:mx-auto">
         {isPaid && tableFullyPaid ? (
@@ -437,6 +437,16 @@ export function Success() {
           >
             Fechar
           </button>
+        ) : journeyMode === 'paymentOnly' ? (
+          /* Payment-only: no menu to go back to */
+          isPaid ? (
+            <button
+              onClick={() => navigate('/conta-mesa')}
+              className="w-full py-3 rounded-pill text-sm font-bold text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform"
+            >
+              Voltar para a conta
+            </button>
+          ) : null
         ) : (
           <button
             onClick={() => navigate('/')}

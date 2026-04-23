@@ -1,26 +1,29 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, UtensilsCrossed, ShoppingCart, User, CreditCard, CheckCircle, LogIn, LogOut } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { BrandSwitcher } from './BrandSwitcher'
 import { MockSwitcher } from './MockSwitcher'
 import { useAuth } from '../context/AuthContext'
+import { useMock } from '../context/MockContext'
 
 interface MenuDrawerProps {
   isOpen: boolean
   onClose: () => void
 }
 
-const NAV_ITEMS_BASE = [
-  { icon: UtensilsCrossed, label: 'Cardápio', href: '/' },
-  { icon: ShoppingCart, label: 'Meu pedido', href: '/carrinho' },
-  { icon: User, label: 'Conta da mesa', href: '/conta-mesa' },
-  { icon: CreditCard, label: 'Pagamento', href: '/pagamento' },
-  { icon: CheckCircle, label: 'Pedido confirmado', href: '/sucesso' },
+const NAV_ITEMS_ALL = [
+  { icon: UtensilsCrossed, label: 'Cardápio', href: '/', modes: ['full', 'menuOnly'] },
+  { icon: ShoppingCart, label: 'Meu pedido', href: '/carrinho', modes: ['full', 'menuOnly'] },
+  { icon: User, label: 'Conta da mesa', href: '/conta-mesa', modes: ['full', 'paymentOnly'] },
+  { icon: CreditCard, label: 'Pagamento', href: '/pagamento', modes: ['full', 'paymentOnly'] },
+  { icon: CheckCircle, label: 'Pedido confirmado', href: '/sucesso', modes: ['full'] },
 ]
 
 export function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
   const { user, isAuthenticated, logout } = useAuth()
+  const { journeyMode } = useMock()
+  const navItems = useMemo(() => NAV_ITEMS_ALL.filter((item) => item.modes.includes(journeyMode)), [journeyMode])
   // Lock scroll while open
   useEffect(() => {
     if (isOpen) {
@@ -115,7 +118,7 @@ export function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
             {/* Navigation */}
             <nav className="flex-1 overflow-y-auto">
               <div className="py-2">
-                {NAV_ITEMS_BASE.map(({ icon: Icon, label, href }) => (
+                {navItems.map(({ icon: Icon, label, href }) => (
                   <Link
                     key={href}
                     to={href}

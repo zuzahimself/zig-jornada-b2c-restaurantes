@@ -23,7 +23,7 @@ export function CartSheet({ isOpen, onClose }: CartSheetProps) {
   const { cart, removeItem, updateQuantity, totalCents, itemCount } = useCart()
   const { isAuthenticated } = useAuth()
   const { tokens } = useBrand()
-  const { cashbackRate, isMultiVendor, isPrepaid } = useMock()
+  const { cashbackRate, isMultiVendor, isPrepaid, journeyMode } = useMock()
   const brandFill = tokens['--color-brand-fill']
   const buttonText = getTextOnBackground(brandFill)
 
@@ -180,7 +180,7 @@ export function CartSheet({ isOpen, onClose }: CartSheetProps) {
 
                 {/* Footer */}
                 <div className="border-t border-border px-4 pt-3 pb-5 md:px-6 md:pt-4 md:pb-6">
-                  {isAuthenticated && cashbackPreview > 0 && (
+                  {isAuthenticated && cashbackPreview > 0 && journeyMode !== 'menuOnly' && (
                     <div className="flex items-center justify-center gap-1.5 pb-3">
                       <Coins size={13} style={{ color: 'var(--color-loyalty-gold)' }} />
                       <span className="text-[11px] font-medium" style={{ color: 'var(--color-loyalty-gold)' }}>
@@ -191,6 +191,11 @@ export function CartSheet({ isOpen, onClose }: CartSheetProps) {
                   <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={() => {
+                      if (journeyMode === 'menuOnly') {
+                        onClose()
+                        navigate('/sucesso')
+                        return
+                      }
                       if (!isAuthenticated) {
                         onClose()
                         navigate('/login?returnTo=cart')
@@ -214,7 +219,7 @@ export function CartSheet({ isOpen, onClose }: CartSheetProps) {
                     >
                       {String(itemCount).padStart(2, '0')}
                     </span>
-                    <span className="text-base font-bold font-display relative">{isPrepaid ? 'Pagar e enviar' : 'Enviar pedido'}</span>
+                    <span className="text-base font-bold font-display relative">{isPrepaid && journeyMode !== 'menuOnly' ? 'Pagar e enviar' : 'Enviar pedido'}</span>
                     <span className="text-sm font-semibold shrink-0 relative">R${formatPrice(grandTotal)}</span>
                   </motion.button>
                 </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { ChefHat, RotateCcw, Coins, Store, User, CreditCard, Mail, Banknote } from 'lucide-react'
-import { useMock, type TableStatus } from '../context/MockContext'
+import { ChefHat, RotateCcw, Coins, Store, User, CreditCard, Mail, Banknote, Utensils, Wallet, LayoutGrid } from 'lucide-react'
+import { useMock, type TableStatus, type JourneyMode } from '../context/MockContext'
+import { useAuth } from '../context/AuthContext'
 import { cn, formatPrice } from '../lib/utils'
 
 interface MockSwitcherProps {
@@ -13,8 +14,15 @@ const SCENARIOS: { value: TableStatus; label: string }[] = [
   { value: 'fully_paid', label: 'Totalmente paga' },
 ]
 
+const JOURNEY_MODES: { value: JourneyMode; label: string; icon: typeof LayoutGrid; desc: string }[] = [
+  { value: 'full', label: 'Completo', icon: LayoutGrid, desc: 'Cardápio + Pedido + Pagamento' },
+  { value: 'menuOnly', label: 'Só cardápio', icon: Utensils, desc: 'Sem pagamento digital' },
+  { value: 'paymentOnly', label: 'Só pagamento', icon: Wallet, desc: 'Pedido via garçom' },
+]
+
 export function MockSwitcher({ onApply }: MockSwitcherProps) {
-  const { tableStatus, setTableStatus, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance, isMultiVendor, setMultiVendor, isLoggedIn, setLoggedIn, hasCpf, setHasCpf, hasEmail, setHasEmail, isPrepaid, setPrepaid } = useMock()
+  const { tableStatus, setTableStatus, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance, isMultiVendor, setMultiVendor, isLoggedIn, setLoggedIn, hasCpf, setHasCpf, hasEmail, setHasEmail, isPrepaid, setPrepaid, journeyMode, setJourneyMode } = useMock()
+  const { login, logout } = useAuth()
   const [local, setLocal] = useState<TableStatus>(tableStatus)
 
   function handleApply() {
@@ -24,6 +32,39 @@ export function MockSwitcher({ onApply }: MockSwitcherProps) {
 
   return (
     <div className="flex flex-col gap-3">
+      {/* Journey mode selector */}
+      <div className="flex flex-col gap-1.5">
+        <p className="text-[11px] font-semibold text-txt-tertiary uppercase tracking-wider mb-1">Modo da jornada</p>
+        {JOURNEY_MODES.map((m) => {
+          const isActive = journeyMode === m.value
+          return (
+            <button
+              key={m.value}
+              onClick={() => {
+                setJourneyMode(m.value)
+                resetOrders()
+                sessionStorage.removeItem('hero-seen')
+                window.location.href = '/'
+              }}
+              className={cn(
+                'flex items-center gap-2.5 px-2 py-2 rounded-lg text-left transition-colors',
+                isActive ? 'bg-brand-subtle' : 'hover:bg-surface-low'
+              )}
+            >
+              <m.icon size={14} className={isActive ? 'text-brand-text' : 'text-txt-tertiary'} />
+              <div className="min-w-0">
+                <span className={cn('text-sm font-medium block', isActive ? 'text-brand-text' : 'text-txt-secondary')}>
+                  {m.label}
+                </span>
+                <span className="text-[10px] text-txt-tertiary">{m.desc}</span>
+              </div>
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="border-t border-border pt-3" />
+
       {/* Prepaid toggle */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -87,7 +128,16 @@ export function MockSwitcher({ onApply }: MockSwitcherProps) {
         <button
           role="switch"
           aria-checked={isLoggedIn}
-          onClick={() => setLoggedIn(!isLoggedIn)}
+          onClick={() => {
+            const next = !isLoggedIn
+            setLoggedIn(next)
+            if (next) {
+              login({ name: 'Visitante Demo', cpf: '12345678900' })
+            } else {
+              logout()
+            }
+            window.location.reload()
+          }}
           className={cn(
             'relative w-10 h-[22px] rounded-full transition-colors',
             isLoggedIn ? 'bg-brand-fill' : 'bg-gray-300'

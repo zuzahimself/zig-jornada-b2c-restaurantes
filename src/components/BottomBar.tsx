@@ -14,11 +14,14 @@ interface BottomBarProps {
 export function BottomBar({ itemCount, totalCents, onViewOrder }: BottomBarProps) {
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
-  const { giftbackBalance, tableOrders } = useMock()
+  const { giftbackBalance, tableOrders, journeyMode } = useMock()
   const hasItems = itemCount > 0
   const hasTableOrders = tableOrders.length > 0
+  const isMenuOnly = journeyMode === 'menuOnly'
 
-  // Hide completely when nothing in cart and nothing on the table
+  // Hide completely in menuOnly mode (view-only menu)
+  if (isMenuOnly) return null
+  // Hide when nothing in cart and nothing on the table
   if (!hasItems && !hasTableOrders) return null
 
   return (
@@ -27,29 +30,31 @@ export function BottomBar({ itemCount, totalCents, onViewOrder }: BottomBarProps
       style={{ boxShadow: '0 -1px 0 0 #ececee, 0 -4px 16px 0 rgba(0,0,0,0.06)' }}
     >
       <div className="px-4 pt-3 pb-3">
-        {/* Promo / saldo tag */}
-        {!isAuthenticated ? (
-          <button
-            onClick={() => navigate('/login')}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-pill text-[10px] font-bold bg-surface-low text-txt-secondary mb-3"
-          >
-            Você pode ter promoções disponíveis
-            <ChevronRight size={10} className="shrink-0" />
-          </button>
-        ) : giftbackBalance > 0 ? (
-          <button
-            onClick={() => navigate('/pagamento?mode=mine')}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-pill text-[10px] font-bold mb-3"
-            style={{
-              backgroundColor: 'color-mix(in srgb, var(--color-loyalty-gold) 12%, transparent)',
-              color: 'var(--color-loyalty-gold)',
-            }}
-          >
-            <Coins size={11} />
-            Você tem R${formatPrice(giftbackBalance)} de saldo
-            <ChevronRight size={10} className="shrink-0" />
-          </button>
-        ) : null}
+        {/* Promo / saldo tag — hide in menuOnly */}
+        {!isMenuOnly && (
+          !isAuthenticated ? (
+            <button
+              onClick={() => navigate('/login')}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-pill text-[10px] font-bold bg-surface-low text-txt-secondary mb-3"
+            >
+              Você pode ter promoções disponíveis
+              <ChevronRight size={10} className="shrink-0" />
+            </button>
+          ) : giftbackBalance > 0 ? (
+            <button
+              onClick={() => navigate('/pagamento?mode=mine')}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-pill text-[10px] font-bold mb-3"
+              style={{
+                backgroundColor: 'color-mix(in srgb, var(--color-loyalty-gold) 12%, transparent)',
+                color: 'var(--color-loyalty-gold)',
+              }}
+            >
+              <Coins size={11} />
+              Você tem R${formatPrice(giftbackBalance)} de saldo
+              <ChevronRight size={10} className="shrink-0" />
+            </button>
+          ) : null
+        )}
 
         {/* Main row */}
         {hasItems ? (

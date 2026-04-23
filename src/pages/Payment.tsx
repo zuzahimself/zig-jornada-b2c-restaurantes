@@ -129,7 +129,7 @@ export function Payment() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto page-container">
+      <div className="flex-1 overflow-y-auto w-full max-w-5xl mx-auto">
         {/* Total hero */}
         <div className="bg-white px-5 pt-6 pb-5 flex flex-col items-center">
           <p className="text-xs font-medium text-txt-tertiary uppercase tracking-wider mb-1">
@@ -398,7 +398,7 @@ export function Payment() {
       </div>
 
       {/* CTA */}
-      <div className="shrink-0 bg-white border-t border-black/5 px-5 pt-3 pb-6 page-container">
+      <div className="shrink-0 bg-white border-t border-black/5 px-5 pt-3 pb-6 w-full max-w-5xl mx-auto">
         <div className="md:max-w-md md:mx-auto">
           <motion.button
             whileTap={{ scale: 0.97 }}
