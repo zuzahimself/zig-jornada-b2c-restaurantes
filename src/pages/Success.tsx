@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, UtensilsCrossed, Coins, ChevronDown, Mail } from 'lucide-react'
-import { SatisfactionSurvey } from '../components/SatisfactionSurvey'
+import { Check, UtensilsCrossed, Coins, ChevronDown, Mail, Star } from 'lucide-react'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { useMock, getTableTotal } from '../context/MockContext'
@@ -23,8 +22,8 @@ export function Success() {
   const { user, updateUser } = useAuth()
   const { addOrder, giftbackBalance, setGiftbackBalance, recordPayment, tableOrders, paidAmount, tableStatus, hasEmail, journeyMode } = useMock()
   const hasProcessed = useRef(false)
-  const [showSurvey, setShowSurvey] = useState(false)
   const [showExtrato, setShowExtrato] = useState(false)
+  const [hoveredStar, setHoveredStar] = useState(0)
   const [emailInput, setEmailInput] = useState('')
   const [emailSaved, setEmailSaved] = useState(false)
   const [emailSkipped, setEmailSkipped] = useState(false)
@@ -119,13 +118,6 @@ export function Success() {
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Show survey after payment
-  useEffect(() => {
-    if (isPaid) {
-      const timer = setTimeout(() => setShowSurvey(true), 1500)
-      return () => clearTimeout(timer)
-    }
-  }, [isPaid])
 
   return (
     <div className="flex flex-col h-full bg-surface-low">
@@ -403,20 +395,44 @@ export function Success() {
           </motion.div>
         )}
 
-        {/* ── Satisfaction survey ── */}
-        <AnimatePresence>
-          {showSurvey && isPaid && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.4 }}
-              className="bg-white rounded-2xl px-5 py-5 mb-3"
-            >
-              <SatisfactionSurvey onDismiss={() => setShowSurvey(false)} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* ── CSAT teaser — single question, tapping opens full survey ── */}
+        {isPaid && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9, duration: 0.4 }}
+            className="bg-white rounded-2xl px-5 py-5 mb-3 text-center"
+          >
+            <p className="text-sm font-semibold text-txt-primary mb-1">
+              Como foi sua experiência?
+            </p>
+            <p className="text-xs text-txt-tertiary mb-3">
+              Toque para avaliar
+            </p>
+            <div className="flex justify-center gap-1">
+              {[1, 2, 3, 4, 5].map((star) => {
+                const filled = star <= hoveredStar
+                return (
+                  <motion.button
+                    key={star}
+                    whileTap={{ scale: 0.8 }}
+                    onClick={() => navigate('/pesquisa', { state: { initialRating: star } })}
+                    onPointerEnter={() => setHoveredStar(star)}
+                    onPointerLeave={() => setHoveredStar(0)}
+                    className="p-1"
+                  >
+                    <Star
+                      size={28}
+                      fill={filled ? 'var(--color-loyalty-gold)' : 'none'}
+                      strokeWidth={1.5}
+                      style={{ color: filled ? 'var(--color-loyalty-gold)' : '#d1d5db' }}
+                    />
+                  </motion.button>
+                )
+              })}
+            </div>
+          </motion.div>
+        )}
       </div>
 
       {/* ── Primary CTA ── */}

@@ -12,6 +12,12 @@ import { Payment } from './pages/Payment'
 import { Success } from './pages/Success'
 import { VendorMenu } from './pages/VendorMenu'
 import { Identify } from './pages/Identify'
+import { ReservationLanding } from './pages/ReservationLanding'
+import { ReservationSchedule } from './pages/ReservationSchedule'
+import { ReservationDetails } from './pages/ReservationDetails'
+import { ReservationConfirmation } from './pages/ReservationConfirmation'
+import { ReservationIdentify } from './pages/ReservationIdentify'
+import { SurveyPage } from './pages/SurveyPage'
 
 function AppRoutes() {
   const location = useLocation()
@@ -26,6 +32,7 @@ function AppRoutes() {
         <Route path="/conta-mesa" element={<TableAccount />} />
         <Route path="/pagamento" element={<Payment />} />
         <Route path="/sucesso" element={<Success />} />
+        <Route path="/pesquisa" element={<SurveyPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     )
@@ -60,6 +67,12 @@ function AppRoutes() {
         <Route path="/conta-mesa" element={<TableAccount />} />
         <Route path="/pagamento" element={<Payment />} />
         <Route path="/sucesso" element={<Success />} />
+        <Route path="/reserva" element={<ReservationLanding />} />
+        <Route path="/reserva/agendar" element={<ReservationSchedule />} />
+        <Route path="/reserva/identificacao" element={<ReservationIdentify />} />
+        <Route path="/reserva/dados" element={<ReservationDetails />} />
+        <Route path="/reserva/confirmada" element={<ReservationConfirmation />} />
+        <Route path="/pesquisa" element={<SurveyPage />} />
       </Routes>
 
       {/* Desktop modal: render ProductDetail on top of background page */}

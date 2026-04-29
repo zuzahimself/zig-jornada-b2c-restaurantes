@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ChefHat, RotateCcw, Coins, Store, User, CreditCard, Mail, Banknote, Utensils, Wallet, LayoutGrid } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { ChefHat, RotateCcw, Coins, Store, User, CreditCard, Mail, Banknote, Utensils, Wallet, LayoutGrid, CalendarCheck } from 'lucide-react'
 import { useMock, type TableStatus, type JourneyMode } from '../context/MockContext'
 import { useAuth } from '../context/AuthContext'
 import { cn, formatPrice } from '../lib/utils'
@@ -23,6 +24,7 @@ const JOURNEY_MODES: { value: JourneyMode; label: string; icon: typeof LayoutGri
 export function MockSwitcher({ onApply }: MockSwitcherProps) {
   const { tableStatus, setTableStatus, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance, isMultiVendor, setMultiVendor, isLoggedIn, setLoggedIn, hasCpf, setHasCpf, hasEmail, setHasEmail, isPrepaid, setPrepaid, journeyMode, setJourneyMode } = useMock()
   const { login, logout } = useAuth()
+  const navigate = useNavigate()
   const [local, setLocal] = useState<TableStatus>(tableStatus)
 
   function handleApply() {
@@ -62,6 +64,15 @@ export function MockSwitcher({ onApply }: MockSwitcherProps) {
           )
         })}
       </div>
+
+      {/* Reservation shortcut */}
+      <button
+        onClick={() => { navigate('/reserva'); onApply?.() }}
+        className="w-full flex items-center justify-center gap-2 py-2 rounded-pill text-sm font-bold border border-brand-border text-brand-text hover:bg-brand-subtle active:scale-95 transition-transform"
+      >
+        <CalendarCheck size={15} />
+        Ir para Reserva
+      </button>
 
       <div className="border-t border-border pt-3" />
 

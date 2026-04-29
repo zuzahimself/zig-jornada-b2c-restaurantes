@@ -140,6 +140,10 @@ export function ProductDetail() {
           </button>
         </motion.div>
 
+        <p className="text-[10px] text-txt-tertiary text-center py-1.5">
+          Imagem meramente ilustrativa
+        </p>
+
         {/* Content */}
         <motion.div
           className="px-4 pt-5 pb-6"

@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useState, useMemo, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, ChevronDown, QrCode, CreditCard, Wallet, ShieldCheck, Coins, UtensilsCrossed, XCircle } from 'lucide-react'
+import { ArrowLeft, ChevronDown, QrCode, CreditCard, Wallet, ShieldCheck, Coins, UtensilsCrossed, XCircle, Users, Minus, Plus, ListChecks } from 'lucide-react'
 import { useCart, getItemUnitPrice } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { useMock, getTableTotal } from '../context/MockContext'
@@ -17,6 +17,7 @@ function formatCpf(value: string): string {
 }
 
 type PaymentMethod = 'pix' | 'credit' | 'debit'
+type ValueMode = 'custom' | 'mine' | 'split' | 'total' | 'items'
 
 const METHODS: { value: PaymentMethod; label: string; description: string; icon: typeof QrCode }[] = [
   { value: 'pix', label: 'Pix', description: 'Aprovação instantânea', icon: QrCode },
@@ -33,14 +34,14 @@ const ERROR_MESSAGES: Record<string, { title: string; description: string }> = {
 
 export function Payment() {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const mode = searchParams.get('mode') // 'mine' | 'total' | 'split' | null
-  const people = Number(searchParams.get('people')) || 1
 
   const { cart, totalCents } = useCart()
   const { user, updateUser } = useAuth()
-  const { paidAmount, tableOrders: mockTableOrders, giftbackBalance, cashbackRate, hasCpf } = useMock()
+  const { paidAmount, tableOrders: mockTableOrders, giftbackBalance, cashbackRate, hasCpf, isPrepaid } = useMock()
   const userCpf = user?.cpf || MOCK_USER_CPF
+
+  // Is this a cart-based payment (no table orders yet)?
+  const isCartPayment = mockTableOrders.length === 0 && cart.length > 0
 
   const [method, setMethod] = useState<PaymentMethod>('pix')
   const [summaryOpen, setSummaryOpen] = useState(false)
@@ -49,66 +50,137 @@ export function Payment() {
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [cpfInput, setCpfInput] = useState('')
+  const [valueMode, setValueMode] = useState<ValueMode>('total')
+  const [customValue, setCustomValue] = useState('')
+  const [splitPeople, setSplitPeople] = useState(2)
+  const [showItemPicker, setShowItemPicker] = useState(false)
+  const [itemSelections, setItemSelections] = useState<Record<string, number>>({})
 
-  // Show CPF field if mock says user doesn't have CPF and user profile has no CPF
   const needsCpf = !hasCpf && !user?.cpf
 
-  const { subtotal, service, grandTotal, items } = useMemo(() => {
-    if (mode === 'total' || mode === 'mine' || mode === 'split') {
-      const orders = mode === 'mine'
-        ? mockTableOrders.filter((o) => o.userCpf === userCpf)
-        : mockTableOrders
-      const sub = getTableTotal(orders)
-      const svc = serviceEnabled ? Math.round(sub * SERVICE_RATE) : 0
-      const grand = sub + svc
-      // Sempre considerar o que já foi pago no remaining
-      const remaining = Math.max(0, grand - paidAmount)
-      let final = mode === 'mine' ? grand : remaining
-      if (mode === 'split') {
-        final = Math.ceil(remaining / people)
-      }
-      const orderItems = orders.flatMap((o) =>
-        o.items.map((i) => ({
-          name: i.menuItem.name,
-          qty: i.quantity,
-          total: i.menuItem.price * i.quantity,
-        }))
-      )
-      return { subtotal: sub, service: svc, grandTotal: final, items: orderItems }
+  // ── Flatten all table items for the item picker ──
+  const allTableItems = useMemo(() => {
+    const items: { key: string; name: string; image: string; unitPrice: number; maxQty: number; orderId: string }[] = []
+    mockTableOrders.forEach((order) => {
+      order.items.forEach((item, idx) => {
+        items.push({
+          key: `${order.id}-${idx}`,
+          name: item.menuItem.name,
+          image: item.menuItem.image,
+          unitPrice: item.menuItem.price,
+          maxQty: item.quantity,
+          orderId: order.id,
+        })
+      })
+    })
+    return items
+  }, [mockTableOrders])
+
+  // ── Compute values for each mode ──
+  const myOrders = mockTableOrders.filter((o) => o.userCpf === userCpf)
+  const tableSubtotal = getTableTotal(mockTableOrders)
+  const tableSvc = serviceEnabled ? Math.round(tableSubtotal * SERVICE_RATE) : 0
+  const tableTotal = tableSubtotal + tableSvc
+  const remaining = Math.max(0, tableTotal - paidAmount)
+
+  const mySubtotal = getTableTotal(myOrders)
+  const mySvc = serviceEnabled ? Math.round(mySubtotal * SERVICE_RATE) : 0
+  const myTotal = mySubtotal + mySvc
+
+  const uniquePeople = new Set(mockTableOrders.map((o) => o.userCpf)).size
+  const isAlone = isPrepaid || uniquePeople <= 1
+
+  const selectedItemsTotal = useMemo(() => {
+    let total = 0
+    for (const item of allTableItems) {
+      const qty = itemSelections[item.key] || 0
+      total += item.unitPrice * qty
+    }
+    const svc = serviceEnabled ? Math.round(total * SERVICE_RATE) : 0
+    return total + svc
+  }, [allTableItems, itemSelections, serviceEnabled])
+
+  // ── The actual amount to pay ──
+  const { baseAmount, items: displayItems } = useMemo(() => {
+    if (isCartPayment) {
+      const svc = serviceEnabled ? Math.round(totalCents * SERVICE_RATE) : 0
+      const cartItems = cart.map((ci) => ({
+        name: ci.item.name,
+        qty: ci.quantity,
+        total: getItemUnitPrice(ci) * ci.quantity,
+      }))
+      return { baseAmount: totalCents + svc, items: cartItems }
     }
 
-    const svc = serviceEnabled ? Math.round(totalCents * SERVICE_RATE) : 0
-    const cartItems = cart.map((ci) => ({
-      name: ci.item.name,
-      qty: ci.quantity,
-      total: getItemUnitPrice(ci) * ci.quantity,
-    }))
-    return { subtotal: totalCents, service: svc, grandTotal: totalCents + svc, items: cartItems }
-  }, [mode, cart, totalCents, paidAmount, mockTableOrders, userCpf, serviceEnabled, people])
+    let amount: number
+    switch (valueMode) {
+      case 'mine':
+        amount = myTotal
+        break
+      case 'split':
+        amount = Math.ceil(remaining / splitPeople)
+        break
+      case 'total':
+        amount = remaining
+        break
+      case 'items':
+        amount = selectedItemsTotal
+        break
+      case 'custom': {
+        const parsed = Math.round(parseFloat(customValue.replace(',', '.')) * 100)
+        amount = isNaN(parsed) || parsed <= 0 ? 0 : Math.min(parsed, remaining)
+        break
+      }
+      default:
+        amount = remaining
+    }
 
-  const giftbackDiscount = useGiftback ? Math.min(giftbackBalance, grandTotal) : 0
-  const finalTotal = grandTotal - giftbackDiscount
+    const orderItems = mockTableOrders.flatMap((o) =>
+      o.items.map((i) => ({
+        name: i.menuItem.name,
+        qty: i.quantity,
+        total: i.menuItem.price * i.quantity,
+      }))
+    )
+    return { baseAmount: amount, items: orderItems }
+  }, [isCartPayment, valueMode, myTotal, remaining, splitPeople, selectedItemsTotal, customValue, totalCents, cart, mockTableOrders, serviceEnabled])
+
+  const giftbackDiscount = useGiftback ? Math.min(giftbackBalance, baseAmount) : 0
+  const finalTotal = Math.max(0, baseAmount - giftbackDiscount)
   const cashbackEarned = Math.round(finalTotal * cashbackRate)
 
+  const setItemQty = useCallback((key: string, qty: number) => {
+    setItemSelections((prev) => ({ ...prev, [key]: qty }))
+  }, [])
+
   function handlePay() {
-    // Save CPF if user just entered one
     if (needsCpf && cpfInput.replace(/\D/g, '').length === 11) {
       updateUser({ cpf: cpfInput.replace(/\D/g, '') })
     }
     setProcessing(true)
     setError(null)
     setTimeout(() => {
-      // ~25% failure rate for demo
       const shouldFail = Math.random() < 0.25
       if (shouldFail) {
         setError(method === 'pix' ? 'pix_expired' : 'card_failed')
         setProcessing(false)
       } else {
-        const prepaidParam = mode === 'cart' ? '&prepaid=1' : ''
+        const prepaidParam = isPrepaid && cart.length > 0 ? '&prepaid=1' : ''
         navigate(`/sucesso?total=${finalTotal}&method=${method}&cashback=${cashbackEarned}${prepaidParam}`)
       }
     }, 2500)
   }
+
+  // ── Custom value input handler ──
+  function handleCustomInput(raw: string) {
+    // Allow only digits and one comma/dot
+    const cleaned = raw.replace(/[^\d,.]/, '').replace(/(,.*),/, '$1')
+    setCustomValue(cleaned)
+    setValueMode('custom')
+  }
+
+  // ── Is editing value (tapped on the amount) ──
+  const [editingValue, setEditingValue] = useState(false)
 
   return (
     <motion.div
@@ -117,7 +189,7 @@ export function Payment() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
     >
-      {/* Header (full-width) */}
+      {/* Header */}
       <div
         className="flex items-center gap-3 px-4 shrink-0"
         style={{ backgroundColor: 'var(--color-brand-subtle)', height: 'var(--header-height)' }}
@@ -130,28 +202,250 @@ export function Payment() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto w-full max-w-5xl mx-auto">
-        {/* Total hero */}
+        {/* ── Value hero (editable) ── */}
         <div className="bg-white px-5 pt-6 pb-5 flex flex-col items-center">
           <p className="text-xs font-medium text-txt-tertiary uppercase tracking-wider mb-1">
             Total a pagar
           </p>
-          <p
-            className="text-3xl font-bold font-display"
-            style={{ color: 'var(--color-brand-fill)' }}
-          >
-            R$ {formatPrice(finalTotal)}
-          </p>
-          {mode === 'split' && (
-            <p className="text-xs text-txt-tertiary mt-1">
-              Dividido por {people} pessoas
-            </p>
+
+          {editingValue ? (
+            <div className="flex items-center gap-1">
+              <span className="text-3xl font-bold font-display" style={{ color: 'var(--color-brand-fill)' }}>
+                R$
+              </span>
+              <input
+                type="text"
+                inputMode="decimal"
+                autoFocus
+                value={customValue}
+                onChange={(e) => handleCustomInput(e.target.value)}
+                onBlur={() => { if (!customValue) setEditingValue(false) }}
+                className="text-3xl font-bold font-display w-36 text-center border-b-2 border-brand-fill bg-transparent outline-none"
+                style={{ color: 'var(--color-brand-fill)' }}
+                placeholder="0,00"
+              />
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                if (!isCartPayment) {
+                  setEditingValue(true)
+                  setValueMode('custom')
+                  setCustomValue(formatPrice(finalTotal).replace('.', ','))
+                }
+              }}
+              className="group"
+            >
+              <p
+                className="text-3xl font-bold font-display transition-opacity group-hover:opacity-80"
+                style={{ color: 'var(--color-brand-fill)' }}
+              >
+                R$ {formatPrice(finalTotal)}
+              </p>
+              {!isCartPayment && (
+                <p className="text-[10px] text-txt-tertiary mt-0.5">Toque para editar o valor</p>
+              )}
+            </button>
           )}
+
           {giftbackDiscount > 0 && (
             <p className="text-xs font-medium mt-1" style={{ color: 'var(--color-loyalty-gold)' }}>
               Giftback de R$ {formatPrice(giftbackDiscount)} aplicado
             </p>
           )}
         </div>
+
+        {/* ── Quick value shortcuts (only for table payments) ── */}
+        {!isCartPayment && (
+          <div className="bg-white mt-2 px-5 py-4">
+            <p className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-3">
+              Quanto quer pagar?
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {/* Minha parte */}
+              {!isAlone && (
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => { setValueMode('mine'); setEditingValue(false); setShowItemPicker(false) }}
+                  className={cn(
+                    'px-3 py-2 rounded-xl text-xs font-semibold border transition-colors',
+                    valueMode === 'mine'
+                      ? 'bg-brand-subtle border-brand-border text-brand-text'
+                      : 'border-border text-txt-secondary hover:bg-surface-low'
+                  )}
+                >
+                  Minha parte · R${formatPrice(myTotal)}
+                </motion.button>
+              )}
+
+              {/* Dividir */}
+              {!isAlone && (
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => { setValueMode('split'); setEditingValue(false); setShowItemPicker(false) }}
+                  className={cn(
+                    'px-3 py-2 rounded-xl text-xs font-semibold border transition-colors',
+                    valueMode === 'split'
+                      ? 'bg-brand-subtle border-brand-border text-brand-text'
+                      : 'border-border text-txt-secondary hover:bg-surface-low'
+                  )}
+                >
+                  Dividir /{splitPeople} · R${formatPrice(Math.ceil(remaining / splitPeople))}
+                </motion.button>
+              )}
+
+              {/* Tudo */}
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => { setValueMode('total'); setEditingValue(false); setShowItemPicker(false) }}
+                className={cn(
+                  'px-3 py-2 rounded-xl text-xs font-semibold border transition-colors',
+                  valueMode === 'total'
+                    ? 'bg-brand-subtle border-brand-border text-brand-text'
+                    : 'border-border text-txt-secondary hover:bg-surface-low'
+                )}
+              >
+                {isAlone ? 'Conta toda' : 'Pagar tudo'} · R${formatPrice(remaining)}
+              </motion.button>
+
+              {/* Por itens */}
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setValueMode('items')
+                  setEditingValue(false)
+                  setShowItemPicker(!showItemPicker)
+                }}
+                className={cn(
+                  'px-3 py-2 rounded-xl text-xs font-semibold border transition-colors flex items-center gap-1.5',
+                  valueMode === 'items'
+                    ? 'bg-brand-subtle border-brand-border text-brand-text'
+                    : 'border-border text-txt-secondary hover:bg-surface-low'
+                )}
+              >
+                <ListChecks size={13} />
+                Por itens
+              </motion.button>
+            </div>
+
+            {/* Split stepper */}
+            <AnimatePresence>
+              {valueMode === 'split' && !isAlone && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden"
+                >
+                  <div className="flex items-center justify-center gap-5 pt-4">
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => setSplitPeople(Math.max(2, splitPeople - 1))}
+                      className="w-10 h-10 rounded-xl border-2 flex items-center justify-center"
+                      style={{ borderColor: 'var(--color-brand-fill)', color: 'var(--color-brand-fill)' }}
+                    >
+                      <Minus size={18} />
+                    </motion.button>
+                    <div className="flex items-center gap-2">
+                      <Users size={16} className="text-txt-tertiary" />
+                      <AnimatePresence mode="wait">
+                        <motion.span
+                          key={splitPeople}
+                          initial={{ scale: 0.7, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0.7, opacity: 0 }}
+                          transition={{ duration: 0.15 }}
+                          className="text-2xl font-bold text-txt-primary w-8 text-center"
+                        >
+                          {splitPeople}
+                        </motion.span>
+                      </AnimatePresence>
+                    </div>
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => setSplitPeople(Math.min(20, splitPeople + 1))}
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-on-brand bg-brand-fill"
+                    >
+                      <Plus size={18} />
+                    </motion.button>
+                  </div>
+                  <p className="text-xs text-txt-tertiary text-center mt-2">
+                    Cada pessoa paga{' '}
+                    <span className="font-semibold text-txt-primary">
+                      R$ {formatPrice(Math.ceil(remaining / splitPeople))}
+                    </span>
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Item picker */}
+            <AnimatePresence>
+              {showItemPicker && valueMode === 'items' && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pt-4 flex flex-col gap-2">
+                    {allTableItems.map((item) => {
+                      const qty = itemSelections[item.key] || 0
+                      return (
+                        <div key={item.key} className="flex items-center gap-3 py-2">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-10 h-10 rounded-lg object-cover shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-txt-primary truncate">{item.name}</p>
+                            <p className="text-xs text-txt-tertiary">
+                              R$ {formatPrice(item.unitPrice)} · máx {item.maxQty}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <motion.button
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => setItemQty(item.key, Math.max(0, qty - 1))}
+                              disabled={qty === 0}
+                              className={cn(
+                                'w-7 h-7 rounded-lg flex items-center justify-center border transition-colors',
+                                qty > 0 ? 'border-brand-fill text-brand-fill' : 'border-border text-txt-tertiary opacity-40'
+                              )}
+                            >
+                              <Minus size={14} />
+                            </motion.button>
+                            <span className="text-sm font-bold text-txt-primary w-5 text-center">{qty}</span>
+                            <motion.button
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => setItemQty(item.key, Math.min(item.maxQty, qty + 1))}
+                              disabled={qty >= item.maxQty}
+                              className={cn(
+                                'w-7 h-7 rounded-lg flex items-center justify-center transition-colors',
+                                qty < item.maxQty ? 'bg-brand-fill text-on-brand' : 'bg-gray-200 text-txt-tertiary'
+                              )}
+                            >
+                              <Plus size={14} />
+                            </motion.button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                    {selectedItemsTotal > 0 && (
+                      <p className="text-xs text-txt-secondary text-center pt-2 border-t border-border">
+                        Itens selecionados:{' '}
+                        <span className="font-bold text-txt-primary">R$ {formatPrice(selectedItemsTotal)}</span>
+                      </p>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
 
         {/* Giftback toggle */}
         {giftbackBalance > 0 && (
@@ -174,9 +468,7 @@ export function Payment() {
               </div>
               <div
                 className="w-11 h-6 rounded-full p-0.5 transition-colors shrink-0"
-                style={{
-                  backgroundColor: useGiftback ? 'var(--color-loyalty-gold)' : '#e5e7eb',
-                }}
+                style={{ backgroundColor: useGiftback ? 'var(--color-loyalty-gold)' : '#e5e7eb' }}
               >
                 <motion.div
                   className="w-5 h-5 rounded-full bg-white shadow-sm"
@@ -188,6 +480,34 @@ export function Payment() {
           </div>
         )}
 
+        {/* Service toggle */}
+        <div className="bg-white mt-2 px-5 py-4">
+          <button
+            onClick={() => setServiceEnabled(!serviceEnabled)}
+            className="w-full flex items-center gap-3.5 text-left"
+          >
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-surface-low">
+              <UtensilsCrossed size={20} className="text-txt-secondary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-txt-primary">Taxa de serviço (10%)</p>
+              <p className="text-[11px] text-txt-tertiary mt-0.5">
+                {serviceEnabled ? `R$ ${formatPrice(tableSvc || Math.round(totalCents * SERVICE_RATE))}` : 'Desativado'}
+              </p>
+            </div>
+            <div
+              className="w-11 h-6 rounded-full p-0.5 transition-colors shrink-0"
+              style={{ backgroundColor: serviceEnabled ? 'var(--color-brand-fill)' : '#e5e7eb' }}
+            >
+              <motion.div
+                className="w-5 h-5 rounded-full bg-white shadow-sm"
+                animate={{ x: serviceEnabled ? 20 : 0 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              />
+            </div>
+          </button>
+        </div>
+
         {/* Order summary — collapsible */}
         <div className="bg-white mt-2 rounded-none">
           <button
@@ -197,10 +517,7 @@ export function Payment() {
             <span className="text-xs font-semibold text-txt-secondary uppercase tracking-wider">
               Detalhes do pedido
             </span>
-            <motion.span
-              animate={{ rotate: summaryOpen ? 180 : 0 }}
-              transition={{ duration: 0.2 }}
-            >
+            <motion.span animate={{ rotate: summaryOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
               <ChevronDown size={16} className="text-txt-tertiary" />
             </motion.span>
           </button>
@@ -215,71 +532,16 @@ export function Payment() {
                 className="overflow-hidden"
               >
                 <div className="px-5 pb-4 flex flex-col gap-1.5">
-                  {items.map((item, i) => (
+                  {displayItems.map((item, i) => (
                     <div key={i} className="flex justify-between text-xs">
-                      <span className="text-txt-secondary">
-                        {item.qty}x {item.name}
-                      </span>
-                      <span className="text-txt-primary font-medium tabular-nums">
-                        R$ {formatPrice(item.total)}
-                      </span>
+                      <span className="text-txt-secondary">{item.qty}x {item.name}</span>
+                      <span className="text-txt-primary font-medium tabular-nums">R$ {formatPrice(item.total)}</span>
                     </div>
                   ))}
-
-                  <div className="border-t border-black/5 pt-2 mt-1 flex flex-col gap-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-txt-tertiary">Subtotal</span>
-                      <span className="text-txt-secondary tabular-nums">R$ {formatPrice(subtotal)}</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span className={cn('text-txt-tertiary', !serviceEnabled && 'line-through')}>Serviço (10%)</span>
-                      <span className={cn('text-txt-secondary tabular-nums', !serviceEnabled && 'line-through')}>
-                        R$ {formatPrice(serviceEnabled ? Math.round(subtotal * SERVICE_RATE) : 0)}
-                      </span>
-                    </div>
-                    {mode === 'total' && paidAmount > 0 && (
-                      <div className="flex justify-between text-xs">
-                        <span className="text-txt-tertiary">Já pago</span>
-                        <span className="font-medium text-emerald-600 tabular-nums">
-                          - R$ {formatPrice(paidAmount)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
-
-        {/* Service toggle */}
-        <div className="bg-white mt-2 px-5 py-4">
-          <button
-            onClick={() => setServiceEnabled(!serviceEnabled)}
-            className="w-full flex items-center gap-3.5 text-left"
-          >
-            <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-surface-low">
-              <UtensilsCrossed size={20} className="text-txt-secondary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-txt-primary">Taxa de serviço (10%)</p>
-              <p className="text-[11px] text-txt-tertiary mt-0.5">
-                {serviceEnabled ? `R$ ${formatPrice(service)}` : 'Desativado'}
-              </p>
-            </div>
-            <div
-              className="w-11 h-6 rounded-full p-0.5 transition-colors shrink-0"
-              style={{
-                backgroundColor: serviceEnabled ? 'var(--color-brand-fill)' : '#e5e7eb',
-              }}
-            >
-              <motion.div
-                className="w-5 h-5 rounded-full bg-white shadow-sm"
-                animate={{ x: serviceEnabled ? 20 : 0 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              />
-            </div>
-          </button>
         </div>
 
         {/* Payment methods */}
@@ -303,44 +565,20 @@ export function Payment() {
                   )}
                   style={isActive ? { backgroundColor: 'var(--color-brand-subtle)' } : undefined}
                 >
-                  {/* Icon */}
                   <div
-                    className={cn(
-                      'w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors',
-                    )}
-                    style={
-                      isActive
-                        ? { backgroundColor: 'var(--color-brand-fill)' }
-                        : { backgroundColor: 'white' }
-                    }
+                    className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors"
+                    style={isActive ? { backgroundColor: 'var(--color-brand-fill)' } : { backgroundColor: 'white' }}
                   >
                     <m.icon
                       size={20}
                       strokeWidth={1.8}
-                      style={{
-                        color: isActive
-                          ? 'var(--color-on-brand-fill)'
-                          : 'var(--color-brand-fill)',
-                      }}
+                      style={{ color: isActive ? 'var(--color-on-brand-fill)' : 'var(--color-brand-fill)' }}
                     />
                   </div>
-
-                  {/* Label + description */}
                   <div className="flex-1 min-w-0">
-                    <p
-                      className={cn(
-                        'text-sm font-semibold',
-                        isActive ? 'text-txt-primary' : 'text-txt-primary'
-                      )}
-                    >
-                      {m.label}
-                    </p>
-                    <p className="text-[11px] text-txt-tertiary mt-0.5">
-                      {m.description}
-                    </p>
+                    <p className="text-sm font-semibold text-txt-primary">{m.label}</p>
+                    <p className="text-[11px] text-txt-tertiary mt-0.5">{m.description}</p>
                   </div>
-
-                  {/* Radio */}
                   <div
                     className={cn(
                       'w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors',
@@ -372,7 +610,7 @@ export function Payment() {
           </div>
         )}
 
-        {/* CPF enrichment — only if user has no CPF */}
+        {/* CPF enrichment */}
         {needsCpf && (
           <div className="px-5 py-4 border-t border-black/5">
             <p className="text-xs font-semibold text-txt-primary mb-1">Informe seu CPF</p>
@@ -403,10 +641,16 @@ export function Payment() {
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={handlePay}
-            disabled={processing}
-            className="w-full py-3 rounded-pill text-sm font-bold text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform disabled:opacity-50"
+            disabled={processing || finalTotal <= 0}
+            className="w-full py-3 px-5 rounded-pill flex items-center justify-between text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform disabled:opacity-50"
           >
-            Pagar R$ {formatPrice(finalTotal)}
+            <span className="text-base font-bold font-display">Pagar</span>
+            <span
+              className="px-3 py-0.5 rounded-lg text-sm font-bold"
+              style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+            >
+              R$ {formatPrice(finalTotal)}
+            </span>
           </motion.button>
         </div>
       </div>

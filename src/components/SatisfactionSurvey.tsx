@@ -5,6 +5,7 @@ import { cn } from '../lib/utils'
 
 interface SatisfactionSurveyProps {
   onDismiss: () => void
+  initialRating?: number
 }
 
 interface Dimension {
@@ -46,8 +47,10 @@ const DIMENSIONS: Dimension[] = [
   },
 ]
 
-export function SatisfactionSurvey({ onDismiss }: SatisfactionSurveyProps) {
-  const [ratings, setRatings] = useState<Record<string, number>>({})
+export function SatisfactionSurvey({ onDismiss, initialRating }: SatisfactionSurveyProps) {
+  const [ratings, setRatings] = useState<Record<string, number>>(
+    initialRating ? { produto: initialRating } : {}
+  )
   const [hoveredStars, setHoveredStars] = useState<Record<string, number>>({})
   const [selectedReasons, setSelectedReasons] = useState<Record<string, string[]>>({})
   const [nps, setNps] = useState(0)
