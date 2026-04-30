@@ -37,6 +37,7 @@ export function MenuHome() {
   const [showUpsell, setShowUpsell] = useState(false)
   const [flyingImage, setFlyingImage] = useState<string | null>(null)
   const [activeCategory, setActiveCategory] = useState('destaques')
+  const [activeSubcategory, setActiveSubcategory] = useState<string | null>(null)
   const [scrolled, setScrolled] = useState(false)
   const [morphComplete, setMorphComplete] = useState(false)
   const [headerHeight, setHeaderHeight] = useState(96)
@@ -165,6 +166,7 @@ export function MenuHome() {
       }
       if (current && current !== activeCategory) {
         setActiveCategory(current)
+        setActiveSubcategory(null)
       }
     }
     el.addEventListener('scroll', onScroll, { passive: true })
@@ -177,6 +179,7 @@ export function MenuHome() {
     if (!section) return
 
     setActiveCategory(catId)
+    setActiveSubcategory(null)
     isScrollingToRef.current = true
 
     section.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -320,6 +323,8 @@ export function MenuHome() {
                 categories={categories}
                 activeCategory={activeCategory}
                 onCategoryChange={scrollToCategory}
+                activeSubcategory={activeSubcategory}
+                onSubcategoryChange={setActiveSubcategory}
                 scrolled={scrolled}
                 stickyTop={headerHeight}
               />
@@ -330,6 +335,7 @@ export function MenuHome() {
                 items={menuItems}
                 showVendor={isMultiVendor}
                 stickyOffset={stickyOffset}
+                activeSubcategory={activeSubcategory}
               />
             </div>
           </div>

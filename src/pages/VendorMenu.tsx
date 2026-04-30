@@ -39,6 +39,7 @@ export function VendorMenu() {
   const [activeCategory, setActiveCategory] = useState(
     vendorCategories[0]?.id ?? 'destaques'
   )
+  const [activeSubcategory, setActiveSubcategory] = useState<string | null>(null)
 
   // Cart effects
   useEffect(() => {
@@ -87,6 +88,7 @@ export function VendorMenu() {
       }
       if (current && current !== activeCategory) {
         setActiveCategory(current)
+        setActiveSubcategory(null)
       }
     }
     el.addEventListener('scroll', onScroll, { passive: true })
@@ -99,6 +101,7 @@ export function VendorMenu() {
     if (!section) return
 
     setActiveCategory(catId)
+    setActiveSubcategory(null)
     isScrollingToRef.current = true
 
     section.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -170,6 +173,8 @@ export function VendorMenu() {
           categories={vendorCategories}
           activeCategory={activeCategory}
           onCategoryChange={scrollToCategory}
+          activeSubcategory={activeSubcategory}
+          onSubcategoryChange={setActiveSubcategory}
           scrolled={scrolled}
           stickyTop={0}
         />
@@ -182,6 +187,7 @@ export function VendorMenu() {
           categories={vendorCategories}
           items={vendorItems}
           stickyOffset={CAT_NAV_H}
+          activeSubcategory={activeSubcategory}
         />
       </main>
 

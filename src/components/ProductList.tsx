@@ -9,6 +9,8 @@ interface ProductListProps {
   showVendor?: boolean
   /** Total height of sticky elements above (header + category nav) for scroll-margin */
   stickyOffset?: number
+  /** Filter items by subcategory (null = show all) */
+  activeSubcategory?: string | null
 }
 
 const isDesktop = () => typeof window !== 'undefined' && window.innerWidth >= 768
@@ -18,12 +20,16 @@ export function ProductList({
   items,
   showVendor,
   stickyOffset = 140,
+  activeSubcategory = null,
 }: ProductListProps) {
   const location = useLocation()
   return (
     <>
       {categories.map((cat) => {
-        const catItems = items.filter((i) => i.categoryId === cat.id)
+        const allCatItems = items.filter((i) => i.categoryId === cat.id)
+        const catItems = activeSubcategory
+          ? allCatItems.filter((i) => i.subcategoryId === activeSubcategory)
+          : allCatItems
         if (catItems.length === 0) return null
 
         const promos = catItems.filter((i) => i.isPromo)
