@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
@@ -48,7 +48,7 @@ export function ProductDetail() {
   const isModal = !!(location.state as { backgroundLocation?: Location } | null)?.backgroundLocation
   const { tokens } = useBrand()
   const { addItem } = useCart()
-  const { journeyMode } = useMock()
+  const { journeyMode, isV1 } = useMock()
   const isMenuOnly = journeyMode === 'menuOnly'
   const [selections, setSelections] = useState<Record<string, string[]>>({})
 
@@ -166,10 +166,19 @@ export function ProductDetail() {
             {item.name}
           </h1>
 
-          {/* Description */}
-          <p className="text-sm text-txt-secondary leading-relaxed mb-5">
-            {item.description}
-          </p>
+          {/* Description with "Ver mais" */}
+          <ExpandableDescription text={item.description} />
+
+          {/* Inline price for vitrine v1 */}
+          {isV1 && isMenuOnly && (
+            <div className="flex items-baseline gap-0.5 font-display mb-5">
+              <span className="text-xs font-semibold" style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}>R$</span>
+              <span className="text-2xl font-bold" style={{ color: 'var(--color-brand-700)' }}>{reais}</span>
+              <span className="text-sm" style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}>,{centavos}</span>
+            </div>
+          )}
+
+          {!(isV1 && isMenuOnly) && <div className="mb-2" />}
 
           {/* Customization steps */}
           {hasCustomizations && (
@@ -181,7 +190,7 @@ export function ProductDetail() {
           )}
 
           {/* Nutrition info */}
-          {hasNutrition && (
+          {hasNutrition && !isV1 && (
             <div className="bg-brand-subtle rounded-xl px-3 py-3 mb-4 grid grid-cols-4 gap-1 text-center">
               {(Object.keys(NUTRITION_CONFIG) as (keyof typeof NUTRITION_CONFIG)[]).map((key) => {
                 const val = item.nutrition?.[key]
@@ -199,7 +208,7 @@ export function ProductDetail() {
           )}
 
           {/* Allergens */}
-          {hasAllergens && (
+          {hasAllergens && !isV1 && (
             <div className="mb-4">
               <p className="text-xs font-semibold text-txt-secondary mb-2">⚠️ Alérgenos</p>
               <div className="flex flex-wrap gap-2">
@@ -311,6 +320,62 @@ export function ProductDetail() {
         )}
       </main>
 
+    </div>
+  )
+}
+
+function ExpandableDescription({ text }: { text: string }) {
+  const [expanded, setExpanded] = useState(false)
+  const [clamped, setClamped] = useState(false)
+  const clampRef = useRef<HTMLParagraphElement>(null)
+  const innerRef = useRef<HTMLDivElement>(null)
+  const [height, setHeight] = useState<number | undefined>(undefined)
+
+  // Detect if text overflows 3 lines
+  useEffect(() => {
+    const el = clampRef.current
+    if (el) setClamped(el.scrollHeight > el.clientHeight)
+  }, [text])
+
+  // Measure full height for animation
+  useEffect(() => {
+    if (innerRef.current) {
+      setHeight(innerRef.current.scrollHeight)
+    }
+  }, [text, expanded])
+
+  // 3-line collapsed height (line-height ~1.625 * 14px font * 3 lines)
+  const collapsedH = clampRef.current?.clientHeight
+
+  return (
+    <div className="mb-3">
+      {/* Hidden measurer for clamp detection */}
+      <p ref={clampRef} className="text-sm leading-relaxed line-clamp-3 absolute opacity-0 pointer-events-none" style={{ width: '100%' }}>
+        {text}
+      </p>
+
+      <motion.div
+        initial={false}
+        animate={{ height: expanded ? height : collapsedH }}
+        transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="overflow-hidden"
+      >
+        <div ref={innerRef}>
+          <p className="text-sm text-txt-secondary leading-relaxed">
+            {text}
+          </p>
+        </div>
+      </motion.div>
+
+      {clamped && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="text-sm font-medium mt-1"
+          style={{ color: 'var(--color-brand-text)' }}
+        >
+          {expanded ? 'Esconder' : 'Ver mais'}
+        </button>
+      )}
     </div>
   )
 }

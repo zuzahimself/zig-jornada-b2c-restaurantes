@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChefHat, RotateCcw, Coins, Store, User, CreditCard, Mail, Banknote, Utensils, Wallet, LayoutGrid, CalendarCheck } from 'lucide-react'
+import { ChefHat, RotateCcw, Coins, Store, User, CreditCard, Mail, Banknote, Utensils, Wallet, LayoutGrid, CalendarCheck, Rocket } from 'lucide-react'
 import { useMock, type TableStatus, type JourneyMode } from '../context/MockContext'
 import { useAuth } from '../context/AuthContext'
 import { cn, formatPrice } from '../lib/utils'
@@ -22,7 +22,7 @@ const JOURNEY_MODES: { value: JourneyMode; label: string; icon: typeof LayoutGri
 ]
 
 export function MockSwitcher({ onApply }: MockSwitcherProps) {
-  const { tableStatus, setTableStatus, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance, isMultiVendor, setMultiVendor, isLoggedIn, setLoggedIn, hasCpf, setHasCpf, hasEmail, setHasEmail, isPrepaid, setPrepaid, journeyMode, setJourneyMode } = useMock()
+  const { tableStatus, setTableStatus, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance, isMultiVendor, setMultiVendor, isLoggedIn, setLoggedIn, hasCpf, setHasCpf, hasEmail, setHasEmail, isPrepaid, setPrepaid, journeyMode, setJourneyMode, isV1, setIsV1 } = useMock()
   const { login, logout } = useAuth()
   const navigate = useNavigate()
   const [local, setLocal] = useState<TableStatus>(tableStatus)
@@ -34,6 +34,35 @@ export function MockSwitcher({ onApply }: MockSwitcherProps) {
 
   return (
     <div className="flex flex-col gap-3">
+      {/* V1 toggle */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Rocket size={14} className="text-txt-secondary" />
+          <div>
+            <span className="text-sm font-bold text-txt-primary">v.1</span>
+            <span className="text-[10px] text-txt-tertiary block">Escopo da primeira versão</span>
+          </div>
+        </div>
+        <button
+          role="switch"
+          aria-checked={isV1}
+          onClick={() => setIsV1(!isV1)}
+          className={cn(
+            'relative w-10 h-[22px] rounded-full transition-colors',
+            isV1 ? 'bg-brand-fill' : 'bg-gray-300'
+          )}
+        >
+          <span
+            className={cn(
+              'absolute top-0.5 left-0.5 w-[18px] h-[18px] rounded-full bg-white shadow transition-transform',
+              isV1 && 'translate-x-[18px]'
+            )}
+          />
+        </button>
+      </div>
+
+      <div className="border-t border-border pt-3" />
+
       {/* Journey mode selector */}
       <div className="flex flex-col gap-1.5">
         <p className="text-[11px] font-semibold text-txt-tertiary uppercase tracking-wider mb-1">Modo da jornada</p>

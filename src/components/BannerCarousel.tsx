@@ -13,6 +13,8 @@ import { formatPrice } from '../lib/utils'
 
 interface BannerCarouselProps {
   items: BannerItem[]
+  /** When set, renders only this banner index as a static cover image (no rotation, no drag) */
+  staticIndex?: number
 }
 
 const AUTO_PLAY_MS = 4000
@@ -37,7 +39,28 @@ function wrap(i: number, length: number) {
   return ((i % length) + length) % length
 }
 
-export function BannerCarousel({ items }: BannerCarouselProps) {
+export function BannerCarousel({ items, staticIndex }: BannerCarouselProps) {
+  // Static mode: same layout as carousel but no rotation/drag/dots
+  if (staticIndex !== undefined) {
+    const item = items[staticIndex] ?? items[0]
+    const shadowImage = getShadowImage(item)
+    return (
+      <div className="relative select-none px-4 pt-2 pb-4">
+        {/* Color shadow */}
+        <div
+          className="absolute left-6 right-6 top-5 bottom-6 rounded-2xl overflow-hidden pointer-events-none"
+          style={{ filter: 'blur(20px)', transform: 'translateY(10px)', opacity: 0.5 }}
+        >
+          <img src={shadowImage} alt="" className="w-full h-full object-cover" draggable={false} />
+        </div>
+        {/* Single slide */}
+        <div className="relative w-full overflow-hidden rounded-2xl" style={{ aspectRatio: '16/9' }}>
+          <SlideContent item={item} />
+        </div>
+      </div>
+    )
+  }
+
   const prefersReduced = useReducedMotion()
   const [active, setActive] = useState(0)
   const activeRef = useRef(0)

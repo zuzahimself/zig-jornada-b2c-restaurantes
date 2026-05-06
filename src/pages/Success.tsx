@@ -8,6 +8,7 @@ import { useMock, getTableTotal } from '../context/MockContext'
 import { MOCK_USER_CPF } from '../data/mockTableData'
 import { formatPrice } from '../lib/utils'
 import type { TableOrder } from '../types'
+import { TimelineExtrato } from '../components/TimelineExtrato'
 
 const METHOD_LABELS: Record<string, string> = {
   pix: 'Pix',
@@ -20,7 +21,7 @@ export function Success() {
   const [searchParams] = useSearchParams()
   const { cart, clearCart } = useCart()
   const { user, updateUser } = useAuth()
-  const { addOrder, giftbackBalance, setGiftbackBalance, recordPayment, tableOrders, paidAmount, tableStatus, hasEmail, journeyMode } = useMock()
+  const { addOrder, giftbackBalance, setGiftbackBalance, recordPayment, tableOrders, paidAmount, tableStatus, hasEmail, journeyMode, payments } = useMock()
   const hasProcessed = useRef(false)
   const [showExtrato, setShowExtrato] = useState(false)
   const [hoveredStar, setHoveredStar] = useState(0)
@@ -46,20 +47,6 @@ export function Success() {
   const remainingOnTable = Math.max(0, tableGrandTotal - paidAmount)
   const tableFullyPaid = tableStatus === 'fully_paid' || remainingOnTable <= 0
 
-  // Flatten all items across orders for the extrato
-  const allItems = useMemo(() => {
-    const items: { name: string; qty: number; price: number }[] = []
-    tableOrders.forEach((order: TableOrder) => {
-      order.items.forEach((oi) => {
-        items.push({
-          name: oi.menuItem.name,
-          qty: oi.quantity,
-          price: oi.menuItem.price * oi.quantity,
-        })
-      })
-    })
-    return items
-  }, [tableOrders])
 
   const orderNumber = useMemo(
     () => `#${String(Math.floor(Math.random() * 90 + 10)).padStart(4, '0')}`,
@@ -347,23 +334,10 @@ export function Success() {
                   className="overflow-hidden"
                 >
                   <div className="border-t border-border pt-3 mt-1">
-                    {/* Items */}
-                    {allItems.length > 0 ? (
-                      <div className="flex flex-col gap-2 mb-3">
-                        {allItems.map((item, i) => (
-                          <div key={i} className="flex items-center justify-between text-sm">
-                            <span className="text-txt-secondary">
-                              {item.qty}x {item.name}
-                            </span>
-                            <span className="text-txt-primary font-medium shrink-0 ml-2">
-                              R$ {formatPrice(item.price)}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-xs text-txt-tertiary mb-3">Nenhum item registrado</p>
-                    )}
+                    {/* Timeline */}
+                    <div className="mb-3">
+                      <TimelineExtrato orders={tableOrders} payments={payments} />
+                    </div>
 
                     {/* Totals */}
                     <div className="border-t border-border pt-3 flex flex-col gap-2.5">

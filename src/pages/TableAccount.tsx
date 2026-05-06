@@ -7,6 +7,7 @@ import { useMock, getTableTotal } from '../context/MockContext'
 import { MOCK_USER_CPF } from '../data/mockTableData'
 import { formatPrice, cn } from '../lib/utils'
 import type { OrderItemStatus } from '../types'
+import { TimelineExtrato } from '../components/TimelineExtrato'
 
 type Tab = 'mine' | 'all'
 
@@ -262,61 +263,7 @@ export function TableAccount() {
                 className="overflow-hidden"
               >
                 <div className="bg-surface-low rounded-xl px-3 py-3">
-                  {/* Pedidos */}
-                  <p className="text-[11px] font-semibold text-txt-tertiary uppercase tracking-wider mb-2">Pedidos</p>
-                  <div className="flex flex-col gap-1.5 mb-3">
-                    {relevantOrders.flatMap((order) =>
-                      order.items.map((item, idx) => (
-                        <div key={`${order.id}-${idx}`} className="flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            {!isPrepaid && (
-                              <span
-                                className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0"
-                                style={{
-                                  backgroundColor: order.userCpf === userCpf ? 'var(--color-brand-fill)' : '#e5e7eb',
-                                  color: order.userCpf === userCpf ? 'var(--color-on-brand-fill)' : '#6b7280',
-                                }}
-                              >
-                                {order.userName.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()}
-                              </span>
-                            )}
-                            <span className="text-txt-secondary truncate">
-                              {item.quantity}x {item.menuItem.name}
-                            </span>
-                          </div>
-                          <span className="text-txt-primary font-medium shrink-0 ml-2">
-                            R$ {formatPrice(item.menuItem.price * item.quantity)}
-                          </span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  {/* Pagamentos */}
-                  {payments.length > 0 && (
-                    <>
-                      <div className="border-t border-border pt-2 mb-2">
-                        <p className="text-[11px] font-semibold text-txt-tertiary uppercase tracking-wider mb-2">Pagamentos</p>
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        {payments.map((p) => (
-                          <div key={p.id} className="flex items-center justify-between text-xs">
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center text-[9px] font-bold text-emerald-700 shrink-0">
-                                {p.userName.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()}
-                              </span>
-                              <span className="text-txt-secondary truncate">
-                                {p.userName} · {p.method === 'pix' ? 'Pix' : p.method === 'credit' ? 'Crédito' : 'Débito'}
-                              </span>
-                            </div>
-                            <span className="text-emerald-600 font-medium shrink-0 ml-2">
-                              - R$ {formatPrice(p.amount)}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
+                  <TimelineExtrato orders={relevantOrders} payments={payments} />
                 </div>
               </motion.div>
             )}

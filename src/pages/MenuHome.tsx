@@ -29,7 +29,7 @@ export function MenuHome() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { totalCents, itemCount, openCartAfterAdd, setOpenCartAfterAdd, lastAddedImage, clearLastAdded } = useCart()
   const { scale } = useBrand()
-  const { isMultiVendor, journeyMode } = useMock()
+  const { isMultiVendor, journeyMode, isV1 } = useMock()
   const isMenuOnly = journeyMode === 'menuOnly'
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -57,9 +57,9 @@ export function MenuHome() {
   }, [morphComplete, heroSeen])
 
   // ── Carousel state ────────────────────────────────────────────────────
-  const [activeBanner, setActiveBanner] = useState(0)
+  const [activeBanner, setActiveBanner] = useState(isV1 ? 3 : 0)
 
-  const shouldAutoPlay = heroSeen || morphComplete
+  const shouldAutoPlay = !isV1 && (heroSeen || morphComplete)
   useEffect(() => {
     if (!shouldAutoPlay) return
     const timer = setInterval(() => {
@@ -131,8 +131,10 @@ export function MenuHome() {
 
   const handleFlyComplete = useCallback(() => {
     setFlyingImage(null)
-    setTimeout(() => setShowUpsell(true), 150)
-  }, [])
+    if (!isV1) {
+      setTimeout(() => setShowUpsell(true), 150)
+    }
+  }, [isV1])
 
   const onHeaderHeight = useCallback((h: number) => setHeaderHeight(h), [])
 
@@ -233,7 +235,7 @@ export function MenuHome() {
           onHeightChange={onHeaderHeight}
         />
 
-        {!heroSeen && typeof window !== 'undefined' && window.innerWidth < 768 ? (
+        {!isV1 && !heroSeen && typeof window !== 'undefined' && window.innerWidth < 768 ? (
           /* ── HERO MODE: morph zone (mobile only) ── */
           <div style={{ marginTop: -headerHeight, height: wrapperHeight }}>
             <motion.div
@@ -305,7 +307,7 @@ export function MenuHome() {
         ) : (
           /* ── NORMAL MODE: full interactive carousel ── */
           <div className="page-container">
-            <BannerCarousel items={bannerItems} />
+            <BannerCarousel items={bannerItems} staticIndex={isV1 ? 3 : undefined} />
           </div>
         )}
 

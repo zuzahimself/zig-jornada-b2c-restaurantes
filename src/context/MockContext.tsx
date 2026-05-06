@@ -39,19 +39,21 @@ interface MockContextValue {
   setPrepaid: (v: boolean) => void
   journeyMode: JourneyMode
   setJourneyMode: (v: JourneyMode) => void
+  isV1: boolean
+  setIsV1: (v: boolean) => void
 }
 
 const MockContext = createContext<MockContextValue | null>(null)
 
-function loadDefaults(): { tableStatus: TableStatus; paidAmount: number; giftbackBalance: number; isMultiVendor: boolean; isLoggedIn: boolean; hasCpf: boolean; hasEmail: boolean; isPrepaid: boolean; journeyMode: JourneyMode } {
+function loadDefaults(): { tableStatus: TableStatus; paidAmount: number; giftbackBalance: number; isMultiVendor: boolean; isLoggedIn: boolean; hasCpf: boolean; hasEmail: boolean; isPrepaid: boolean; journeyMode: JourneyMode; isV1: boolean } {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) {
       const parsed = JSON.parse(stored)
-      return { tableStatus: 'open', paidAmount: 0, giftbackBalance: 1250, isMultiVendor: false, isLoggedIn: true, hasCpf: true, hasEmail: false, isPrepaid: false, journeyMode: 'full', ...parsed }
+      return { tableStatus: 'open', paidAmount: 0, giftbackBalance: 1250, isMultiVendor: false, isLoggedIn: true, hasCpf: true, hasEmail: false, isPrepaid: false, journeyMode: 'full', isV1: false, ...parsed }
     }
   } catch { /* ignore */ }
-  return { tableStatus: 'open', paidAmount: 0, giftbackBalance: 1250, isMultiVendor: false, isLoggedIn: true, hasCpf: true, hasEmail: false, isPrepaid: false, journeyMode: 'full' }
+  return { tableStatus: 'open', paidAmount: 0, giftbackBalance: 1250, isMultiVendor: false, isLoggedIn: true, hasCpf: true, hasEmail: false, isPrepaid: false, journeyMode: 'full', isV1: false }
 }
 
 export function MockProvider({ children }: { children: ReactNode }) {
@@ -66,6 +68,7 @@ export function MockProvider({ children }: { children: ReactNode }) {
   const [hasEmail, setHasEmailState] = useState(defaults.hasEmail)
   const [isPrepaid, setPrepaidState] = useState(defaults.isPrepaid)
   const [journeyMode, setJourneyModeState] = useState<JourneyMode>(defaults.journeyMode)
+  const [isV1, setIsV1State] = useState(defaults.isV1)
   const [payments, setPayments] = useState<PaymentEntry[]>([])
   const cashbackRate = 0.05
 
@@ -149,6 +152,11 @@ export function MockProvider({ children }: { children: ReactNode }) {
     persistAll({ journeyMode: v })
   }, [persistAll])
 
+  const setIsV1 = useCallback((v: boolean) => {
+    setIsV1State(v)
+    persistAll({ isV1: v })
+  }, [persistAll])
+
   const recordPayment = useCallback((amount: number, userName: string, method: string) => {
     // Add payment entry
     setPayments((prev) => [
@@ -186,7 +194,7 @@ export function MockProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <MockContext.Provider value={{ tableStatus, setTableStatus, paidAmount, setPaidAmount, tableOrders, addOrder, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance, cashbackRate, payments, recordPayment, isMultiVendor, setMultiVendor, isLoggedIn, setLoggedIn, hasCpf, setHasCpf, hasEmail, setHasEmail, isPrepaid, setPrepaid, journeyMode, setJourneyMode }}>
+    <MockContext.Provider value={{ tableStatus, setTableStatus, paidAmount, setPaidAmount, tableOrders, addOrder, advanceOrderStatus, resetOrders, giftbackBalance, setGiftbackBalance, cashbackRate, payments, recordPayment, isMultiVendor, setMultiVendor, isLoggedIn, setLoggedIn, hasCpf, setHasCpf, hasEmail, setHasEmail, isPrepaid, setPrepaid, journeyMode, setJourneyMode, isV1, setIsV1 }}>
       {children}
     </MockContext.Provider>
   )

@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import type { Category, MenuItem } from '../types'
 import { vendors } from '../data/menuData'
 import { formatPrice, cn } from '../lib/utils'
+import { useMock } from '../context/MockContext'
 
 interface ProductListProps {
   categories: Category[]
@@ -68,8 +69,9 @@ export function ProductList({
 }
 
 function ProductCard({ item, showVendor }: { item: MenuItem; showVendor?: boolean }) {
+  const { isV1 } = useMock()
   const [reais, centavos] = formatPrice(item.price).split(',')
-  const originalPrice = item.discountPercent
+  const originalPrice = !isV1 && item.discountPercent
     ? formatPrice(Math.round(item.price / (1 - item.discountPercent / 100)))
     : null
   const vendor = showVendor ? vendors.find((v) => v.id === item.vendorId) : undefined
@@ -79,7 +81,7 @@ function ProductCard({ item, showVendor }: { item: MenuItem; showVendor?: boolea
       className={cn(
         'flex items-start gap-3 px-4 py-3',
         'md:flex-col md:gap-0 md:p-0',
-        item.isPromo && 'bg-brand-subtle'
+        item.isPromo && !isV1 && 'bg-brand-subtle'
       )}
     >
       {/* Image — right side on mobile, top on desktop */}
@@ -88,7 +90,7 @@ function ProductCard({ item, showVendor }: { item: MenuItem; showVendor?: boolea
       </div>
 
       <div className="flex-1 min-w-0 order-1 md:order-none md:p-3 md:flex md:flex-col md:min-h-[120px]">
-        {item.badge && (
+        {item.badge && !isV1 && (
           <div className="inline-flex items-center glass-badge rounded-pill px-3 py-1 text-white text-xs font-semibold mb-1 float-right ml-2 md:float-none md:ml-0 md:self-start">
             {item.badge}
           </div>

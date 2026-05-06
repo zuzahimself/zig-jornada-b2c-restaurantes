@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import type { MenuItem } from '../types'
 import { formatPrice } from '../lib/utils'
+import { useMock } from '../context/MockContext'
 
 interface SuggestionSectionProps {
   items: MenuItem[]
@@ -28,6 +29,7 @@ export function SuggestionSection({ items }: SuggestionSectionProps) {
 }
 
 function SuggestionCard({ item }: { item: MenuItem }) {
+  const { isV1 } = useMock()
   const [reais, centavos] = formatPrice(item.price).split(',')
 
   return (
@@ -35,7 +37,7 @@ function SuggestionCard({ item }: { item: MenuItem }) {
       {/* Photo 4:3 */}
       <div className="relative w-full aspect-[4/3] rounded-md overflow-hidden mb-2">
         <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-        {item.badge && (
+        {item.badge && !isV1 && (
           <div
             className="absolute top-1.5 left-1.5 glass-badge rounded-pill px-3 py-1 text-white text-xs font-semibold"
           >

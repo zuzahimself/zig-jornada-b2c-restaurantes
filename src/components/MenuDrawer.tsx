@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, UtensilsCrossed, ShoppingCart, User, CreditCard, CheckCircle, LogIn, LogOut } from 'lucide-react'
+import { X, Receipt, CalendarDays, LogIn, LogOut, Info, Clock, MapPin, Globe, Share2 } from 'lucide-react'
 import { useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { BrandSwitcher } from './BrandSwitcher'
@@ -12,18 +12,25 @@ interface MenuDrawerProps {
   onClose: () => void
 }
 
-const NAV_ITEMS_ALL = [
-  { icon: UtensilsCrossed, label: 'Cardápio', href: '/', modes: ['full', 'menuOnly'] },
-  { icon: ShoppingCart, label: 'Meu pedido', href: '/carrinho', modes: ['full', 'menuOnly'] },
-  { icon: User, label: 'Conta da mesa', href: '/conta-mesa', modes: ['full', 'paymentOnly'] },
-  { icon: CreditCard, label: 'Pagamento', href: '/pagamento', modes: ['full', 'paymentOnly'] },
-  { icon: CheckCircle, label: 'Pedido confirmado', href: '/sucesso', modes: ['full'] },
+const NAV_ITEMS = [
+  { icon: Receipt, label: 'Ver conta', href: '/conta-mesa', modes: ['full', 'paymentOnly'] },
+  { icon: CalendarDays, label: 'Reservar', href: '/reserva', modes: ['full', 'menuOnly'] },
+]
+
+const HOURS = [
+  { days: 'Seg a Qui', time: '11:30 – 15:00 · 18:00 – 23:00' },
+  { days: 'Sex e Sáb', time: '11:30 – 00:00' },
+  { days: 'Domingo', time: '11:30 – 17:00' },
+]
+
+const SOCIALS = [
+  { label: '@mana.salvador', href: 'https://instagram.com/mana.salvador' },
 ]
 
 export function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
   const { user, isAuthenticated, logout } = useAuth()
   const { journeyMode } = useMock()
-  const navItems = useMemo(() => NAV_ITEMS_ALL.filter((item) => item.modes.includes(journeyMode)), [journeyMode])
+  const navItems = useMemo(() => NAV_ITEMS.filter((item) => item.modes.includes(journeyMode)), [journeyMode])
   // Lock scroll while open
   useEffect(() => {
     if (isOpen) {
@@ -117,6 +124,7 @@ export function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
 
             {/* Navigation */}
             <nav className="flex-1 overflow-y-auto">
+              {/* Nav links */}
               <div className="py-2">
                 {navItems.map(({ icon: Icon, label, href }) => (
                   <Link
@@ -130,25 +138,101 @@ export function MenuDrawer({ isOpen, onClose }: MenuDrawerProps) {
                   </Link>
                 ))}
 
-                {/* Auth item */}
-                {isAuthenticated ? (
-                  <button
-                    onClick={() => { logout(); onClose() }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-txt-primary hover:bg-surface-low transition-colors"
-                  >
-                    <LogOut size={18} className="text-txt-secondary shrink-0" strokeWidth={1.8} />
-                    Sair
-                  </button>
-                ) : (
-                  <Link
-                    to="/login"
-                    onClick={onClose}
-                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-txt-primary hover:bg-surface-low transition-colors"
-                  >
-                    <LogIn size={18} className="text-txt-secondary shrink-0" strokeWidth={1.8} />
-                    Entrar
-                  </Link>
+                {/* Auth — hidden in menuOnly (vitrine) */}
+                {journeyMode !== 'menuOnly' && (
+                  isAuthenticated ? (
+                    <button
+                      onClick={() => { logout(); onClose() }}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-txt-primary hover:bg-surface-low transition-colors"
+                    >
+                      <LogOut size={18} className="text-txt-secondary shrink-0" strokeWidth={1.8} />
+                      Sair
+                    </button>
+                  ) : (
+                    <Link
+                      to="/login"
+                      onClick={onClose}
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-txt-primary hover:bg-surface-low transition-colors"
+                    >
+                      <LogIn size={18} className="text-txt-secondary shrink-0" strokeWidth={1.8} />
+                      Entrar
+                    </Link>
+                  )
                 )}
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-border mx-4" />
+
+              {/* O Restaurante */}
+              <div className="py-3 px-4 space-y-4">
+                <p className="text-xs font-semibold text-txt-tertiary uppercase tracking-wider">
+                  O Restaurante
+                </p>
+
+                {/* About */}
+                <div className="flex gap-2.5">
+                  <Info size={16} className="text-txt-tertiary shrink-0 mt-0.5" strokeWidth={1.8} />
+                  <p className="text-sm text-txt-secondary leading-relaxed">
+                    Cozinha autoral baiana com ingredientes locais e sazonais. Ambiente descontraído à beira-mar.
+                  </p>
+                </div>
+
+                {/* Hours */}
+                <div className="flex gap-2.5">
+                  <Clock size={16} className="text-txt-tertiary shrink-0 mt-0.5" strokeWidth={1.8} />
+                  <div className="space-y-1">
+                    {HOURS.map(({ days, time }) => (
+                      <div key={days} className="text-sm">
+                        <span className="font-medium text-txt-primary">{days}</span>
+                        <span className="text-txt-secondary"> · {time}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Address */}
+                <div className="flex gap-2.5">
+                  <MapPin size={16} className="text-txt-tertiary shrink-0 mt-0.5" strokeWidth={1.8} />
+                  <p className="text-sm text-txt-secondary">
+                    R. do Meio, 28 – Rio Vermelho, Salvador – BA
+                  </p>
+                </div>
+
+                {/* Social */}
+                <div className="flex gap-2.5">
+                  <Globe size={16} className="text-txt-tertiary shrink-0 mt-0.5" strokeWidth={1.8} />
+                  <div className="space-y-1">
+                    {SOCIALS.map(({ label, href }) => (
+                      <a
+                        key={label}
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-medium block"
+                        style={{ color: 'var(--color-brand-text)' }}
+                      >
+                        {label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Share */}
+                <button
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({ title: 'Mana – Salvador', url: window.location.origin })
+                    } else {
+                      navigator.clipboard.writeText(window.location.origin)
+                    }
+                  }}
+                  className="flex items-center gap-2 text-sm font-medium"
+                  style={{ color: 'var(--color-brand-text)' }}
+                >
+                  <Share2 size={16} strokeWidth={1.8} />
+                  Compartilhar
+                </button>
               </div>
 
               {/* Divider */}

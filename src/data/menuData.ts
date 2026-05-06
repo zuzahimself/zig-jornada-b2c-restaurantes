@@ -109,7 +109,7 @@ export const menuItems: MenuItem[] = [
   {
     id: 'g1',
     name: 'Gratinado Mana',
-    description: 'Frango desfiado, catupiry, milho e parmesão gratinado. Acompanha arroz, feijão e salada.',
+    description: 'Frango desfiado, catupiry, milho e parmesão gratinado no forno a lenha até dourar. Servido com arroz de jasmin, feijão tropeiro da casa e salada de folhas verdes com vinagrete de manga. Uma receita que nasceu na cozinha da avó do chef e virou o carro-chefe do Mana — o prato mais pedido desde a inauguração.',
     price: 3490,
     image: unsplash('photo-1568901346375-23c9450c58cd', 400),
     categoryId: 'destaques',
