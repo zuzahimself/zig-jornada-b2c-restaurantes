@@ -8,7 +8,6 @@ import { ProductList } from '../components/ProductList'
 import { BottomBar } from '../components/BottomBar'
 import { CartSheet } from '../components/CartSheet'
 import { FlyingCartItem } from '../components/FlyingCartItem'
-import { UpsellSheet } from '../components/UpsellSheet'
 import { vendors, categories, menuItems, suggestionItems } from '../data/menuData'
 import { useCart } from '../context/CartContext'
 
@@ -23,7 +22,6 @@ export function VendorMenu() {
   const { totalCents, itemCount, openCartAfterAdd, setOpenCartAfterAdd, lastAddedImage, clearLastAdded } = useCart()
 
   const [cartSheetOpen, setCartSheetOpen] = useState(false)
-  const [showUpsell, setShowUpsell] = useState(false)
   const [flyingImage, setFlyingImage] = useState<string | null>(null)
   const [scrolled, setScrolled] = useState(false)
   const mainRef = useRef<HTMLElement>(null)
@@ -62,7 +60,6 @@ export function VendorMenu() {
 
   const handleFlyComplete = useCallback(() => {
     setFlyingImage(null)
-    setTimeout(() => setShowUpsell(true), 150)
   }, [])
 
   // ── Scroll spy ─────────────────────────────────────────────────────────
@@ -202,14 +199,6 @@ export function VendorMenu() {
 
       <CartSheet isOpen={cartSheetOpen} onClose={() => setCartSheetOpen(false)} />
       <FlyingCartItem image={flyingImage} onComplete={handleFlyComplete} />
-      <UpsellSheet
-        isOpen={showUpsell}
-        onClose={() => setShowUpsell(false)}
-        onViewCart={() => {
-          setShowUpsell(false)
-          setTimeout(() => setCartSheetOpen(true), 200)
-        }}
-      />
     </motion.div>
   )
 }

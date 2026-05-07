@@ -9,7 +9,6 @@ import { ProductList } from '../components/ProductList'
 import { BottomBar } from '../components/BottomBar'
 import { CartSheet } from '../components/CartSheet'
 import { FlyingCartItem } from '../components/FlyingCartItem'
-import { UpsellSheet } from '../components/UpsellSheet'
 import { WelcomeBanner } from '../components/WelcomeBanner'
 import { SearchOverlay } from '../components/SearchOverlay'
 import { VendorGrid } from '../components/VendorGrid'
@@ -34,7 +33,6 @@ export function MenuHome() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [cartSheetOpen, setCartSheetOpen] = useState(false)
-  const [showUpsell, setShowUpsell] = useState(false)
   const [flyingImage, setFlyingImage] = useState<string | null>(null)
   const [activeCategory, setActiveCategory] = useState('destaques')
   const [activeSubcategory, setActiveSubcategory] = useState<string | null>(null)
@@ -131,10 +129,7 @@ export function MenuHome() {
 
   const handleFlyComplete = useCallback(() => {
     setFlyingImage(null)
-    if (!isV1) {
-      setTimeout(() => setShowUpsell(true), 150)
-    }
-  }, [isV1])
+  }, [])
 
   const onHeaderHeight = useCallback((h: number) => setHeaderHeight(h), [])
 
@@ -370,14 +365,6 @@ export function MenuHome() {
         <>
           <CartSheet isOpen={cartSheetOpen} onClose={() => setCartSheetOpen(false)} />
           <FlyingCartItem image={flyingImage} onComplete={handleFlyComplete} />
-          <UpsellSheet
-            isOpen={showUpsell}
-            onClose={() => setShowUpsell(false)}
-            onViewCart={() => {
-              setShowUpsell(false)
-              setTimeout(() => setCartSheetOpen(true), 200)
-            }}
-          />
         </>
       )}
       <WelcomeBanner />
