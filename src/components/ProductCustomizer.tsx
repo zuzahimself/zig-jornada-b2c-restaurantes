@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Check } from 'lucide-react'
+import { Check, Minus, Plus } from 'lucide-react'
 import type { CustomizationGroup } from '../types'
 import { formatPrice, cn } from '../lib/utils'
 
@@ -15,6 +15,8 @@ export function ProductCustomizer({ groups, selections, onSelectionChange }: Pro
       {groups.map((group) => {
         const selected = selections[group.id] ?? []
         const isComplete = !group.required || selected.length > 0
+        const totalSelected = selected.length
+        const useStepper = group.type === 'checkbox' && group.maxSelections && group.maxSelections > 1
 
         return (
           <div
@@ -35,7 +37,7 @@ export function ProductCustomizer({ groups, selections, onSelectionChange }: Pro
                 )}
                 {!group.required && group.maxSelections && (
                   <span className="text-[10px] text-txt-tertiary">
-                    Até {group.maxSelections}
+                    {totalSelected}/{group.maxSelections}
                   </span>
                 )}
               </div>
@@ -53,8 +55,80 @@ export function ProductCustomizer({ groups, selections, onSelectionChange }: Pro
             {/* Options */}
             <div className="flex flex-col gap-1.5">
               {group.options.map((option) => {
-                const isSelected = selected.includes(option.id)
+                const qty = selected.filter((id) => id === option.id).length
+                const isSelected = qty > 0
 
+                if (useStepper) {
+                  const atGroupMax = totalSelected >= group.maxSelections!
+                  const canIncrement = !atGroupMax
+
+                  function handleIncrement() {
+                    if (!canIncrement) return
+                    onSelectionChange(group.id, [...selected, option.id])
+                  }
+
+                  function handleDecrement() {
+                    if (qty === 0) return
+                    const idx = selected.lastIndexOf(option.id)
+                    const next = [...selected]
+                    next.splice(idx, 1)
+                    onSelectionChange(group.id, next)
+                  }
+
+                  return (
+                    <div
+                      key={option.id}
+                      className={cn(
+                        'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150',
+                        isSelected ? 'bg-brand-subtle' : 'bg-transparent'
+                      )}
+                    >
+                      {/* Option name */}
+                      <span className={cn(
+                        'flex-1 text-sm',
+                        isSelected ? 'font-semibold text-txt-primary' : 'text-txt-secondary'
+                      )}>
+                        {option.name}
+                      </span>
+
+                      {/* Price modifier */}
+                      {option.priceModifier > 0 && (
+                        <span className="text-xs font-medium text-txt-tertiary shrink-0">
+                          + R$ {formatPrice(option.priceModifier)}
+                        </span>
+                      )}
+
+                      {/* Stepper */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        <motion.button
+                          whileTap={{ scale: 0.9 }}
+                          onClick={handleDecrement}
+                          disabled={qty === 0}
+                          className={cn(
+                            'w-7 h-7 rounded-lg flex items-center justify-center border transition-colors',
+                            qty > 0 ? 'border-brand-fill text-brand-fill' : 'border-border text-txt-tertiary opacity-40'
+                          )}
+                        >
+                          <Minus size={14} />
+                        </motion.button>
+                        <span className="text-sm font-bold text-txt-primary w-5 text-center">{qty}</span>
+                        <motion.button
+                          whileTap={{ scale: 0.9 }}
+                          onClick={handleIncrement}
+                          disabled={!canIncrement}
+                          className={cn(
+                            'w-7 h-7 rounded-lg flex items-center justify-center border transition-colors',
+                            canIncrement ? 'border-brand-fill bg-brand-fill text-on-brand' : 'border-border text-txt-tertiary opacity-40'
+                          )}
+                        >
+                          <Plus size={14} />
+                        </motion.button>
+                      </div>
+                    </div>
+                  )
+                }
+
+                // Radio or simple checkbox (no stepper)
                 function handleSelect() {
                   if (group.type === 'radio') {
                     onSelectionChange(group.id, [option.id])

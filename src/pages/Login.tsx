@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { Globe, AlertTriangle, RotateCcw, ArrowLeft } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Globe, AlertTriangle, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useBrand } from '../context/BrandContext'
 import { getTextOnBackground } from '../lib/colorSystem'
@@ -71,62 +71,50 @@ export function Login() {
     doNavigateBack(returnTo)
   }
 
-  // ── Error screen ──
-  if (loginError) {
-    return (
-      <div className="flex flex-col h-full bg-white w-full max-w-5xl mx-auto">
-        <motion.div
-          className="flex-1 flex flex-col items-center justify-center px-6 pb-8"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.35 }}
-        >
-          <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-5">
-            <AlertTriangle size={28} className="text-red-500" />
-          </div>
-
-          <h1 className="text-lg font-bold text-txt-primary text-center mb-2">
-            Falha ao conectar
-          </h1>
-          <p className="text-sm text-txt-secondary text-center mb-1 max-w-xs">
-            {loginError.message}
-          </p>
-          <p className="text-xs text-txt-tertiary text-center mb-8">
-            Código: AUTH_{loginError.provider.toUpperCase()}_TIMEOUT
-          </p>
-
-          <div className="w-full max-w-xs flex flex-col gap-3">
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => setLoginError(null)}
-              className="w-full py-3 rounded-pill text-sm font-bold text-on-brand bg-brand-fill hover:bg-brand-fill-hover active:scale-95 transition-transform flex items-center justify-center gap-2"
-            >
-              <RotateCcw size={15} />
-              Tentar novamente
-            </motion.button>
-
-            <button
-              onClick={() => setLoginError(null)}
-              className="py-2 text-sm font-medium text-brand-text"
-            >
-              Usar outro método
-            </button>
-
-            <button
-              onClick={() => navigate(-1)}
-              className="py-2 text-sm font-medium text-txt-tertiary flex items-center justify-center gap-1.5"
-            >
-              <ArrowLeft size={14} />
-              Voltar ao cardápio
-            </button>
-          </div>
-        </motion.div>
-      </div>
-    )
-  }
+  // Auto-dismiss toast after 5s
+  useEffect(() => {
+    if (!loginError) return
+    const t = setTimeout(() => setLoginError(null), 5000)
+    return () => clearTimeout(t)
+  }, [loginError])
 
   return (
-    <div className="flex flex-col h-full bg-white w-full max-w-5xl mx-auto">
+    <div className="flex flex-col h-full bg-white w-full max-w-5xl mx-auto relative">
+      {/* Error toast */}
+      <AnimatePresence>
+        {loginError && (
+          <motion.div
+            initial={{ y: -80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -80, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+            className="absolute top-4 left-4 right-4 z-50 rounded-xl px-4 py-3 flex items-start gap-3 shadow-lg"
+            style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA' }}
+          >
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+              style={{ backgroundColor: '#DC2626' }}
+            >
+              <AlertTriangle size={16} color="#fff" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold" style={{ color: '#DC2626' }}>
+                Falha ao conectar
+              </p>
+              <p className="text-xs text-txt-secondary mt-0.5">
+                {loginError.message}
+              </p>
+            </div>
+            <button
+              onClick={() => setLoginError(null)}
+              className="shrink-0 mt-0.5"
+            >
+              <X size={16} className="text-txt-tertiary" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <motion.div
         className="flex-1 flex flex-col items-center px-6 pt-16 pb-8 overflow-y-auto"
         initial={{ opacity: 0, y: 30 }}
