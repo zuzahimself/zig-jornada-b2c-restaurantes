@@ -14,8 +14,6 @@ interface ProductListProps {
   activeSubcategory?: string | null
 }
 
-const isDesktop = () => typeof window !== 'undefined' && window.innerWidth >= 768
-
 export function ProductList({
   categories,
   items,
@@ -56,7 +54,7 @@ export function ProductList({
 
             <div className="divide-y divide-black/5 md:divide-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 md:px-4">
               {ordered.map((item) => (
-                <Link key={item.id} to={`/produto/${item.id}`} state={isDesktop() ? { backgroundLocation: location } : undefined} className="block md:rounded-xl md:border md:border-black/5 md:overflow-hidden">
+                <Link key={item.id} to={`/produto/${item.id}`} state={{ backgroundLocation: location }} className="block md:rounded-xl md:border md:border-black/5 md:overflow-hidden">
                   <ProductCard item={item} showVendor={showVendor} />
                 </Link>
               ))}

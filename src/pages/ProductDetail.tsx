@@ -46,11 +46,15 @@ export function ProductDetail() {
   const navigate = useNavigate()
   const location = useLocation()
   const isModal = !!(location.state as { backgroundLocation?: Location } | null)?.backgroundLocation
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const isMobileOverlay = isModal && isMobile
+  const useDesktopModal = isModal && !isMobile
   const { tokens } = useBrand()
-  const { addItem } = useCart()
+  const { addItem, clearLastAdded, triggerFly } = useCart()
   const { journeyMode, isV1 } = useMock()
   const isMenuOnly = journeyMode === 'menuOnly'
   const [selections, setSelections] = useState<Record<string, string[]>>({})
+  const [shrinking, setShrinking] = useState(false)
 
   const item = menuItems.find((i) => i.id === id)
 
@@ -61,7 +65,6 @@ export function ProductDetail() {
 
   const category = categories.find((c) => c.id === item.categoryId)
 
-  // Related products: same category first, then others, excluding current
   const relatedItems = useMemo(() => {
     const sameCategory = menuItems.filter((i) => i.id !== item.id && i.categoryId === item.categoryId)
     const others = menuItems.filter((i) => i.id !== item.id && i.categoryId !== item.categoryId)
@@ -74,7 +77,6 @@ export function ProductDetail() {
   const hasAllergens = item.allergens && item.allergens.length > 0
   const hasCustomizations = item.customizations && item.customizations.length > 0
 
-  // Calculate total price with modifiers
   const totalPrice = useMemo(() => {
     let total = item.price
     if (!item.customizations) return total
@@ -88,7 +90,6 @@ export function ProductDetail() {
     return total
   }, [item, selections])
 
-  // Check if all required groups are filled
   const allRequiredFilled = useMemo(() => {
     if (!item.customizations) return true
     return item.customizations
@@ -104,222 +105,293 @@ export function ProductDetail() {
     setSelections((prev) => ({ ...prev, [groupId]: optionIds }))
   }, [])
 
-  return (
-    <div className={isModal
-      ? 'fixed inset-0 z-50 flex items-center justify-center bg-black/50'
+  // ── Shrink animation: clip-path circle ──
+  // Target the shrink toward bottom-center (near the cart button) for organic feel
+  const viewportW = typeof window !== 'undefined' ? window.innerWidth : 430
+  const viewportH = typeof window !== 'undefined' ? window.innerHeight : 800
+  const clipCx = viewportW / 2
+  const clipCy = viewportH * 0.72 // aim toward bottom area near cart
+  const clipMaxR = Math.ceil(Math.sqrt(
+    Math.max(clipCx, viewportW - clipCx) ** 2 + Math.max(clipCy, viewportH - clipCy) ** 2
+  ))
+
+  const handleAdd = () => {
+    if (isMobileOverlay) {
+      addItem(item, 1, hasCustomizations ? selections : undefined)
+      clearLastAdded()
+      setShrinking(true)
+    } else {
+      addItem(item, 1, hasCustomizations ? selections : undefined)
+      navigate(-1)
+    }
+  }
+
+  const handleShrinkComplete = () => {
+    if (!shrinking) return
+    triggerFly(item.image, { x: clipCx - 24, y: clipCy - 24 })
+    navigate(-1)
+  }
+
+  // ── Wrapper class ──
+  const outerClass = useDesktopModal
+    ? 'fixed inset-0 z-50 flex items-center justify-center bg-black/50'
+    : isMobileOverlay
+      ? 'fixed inset-0 z-[9999] bg-white'
       : 'flex flex-col h-full bg-white page-container'
-    }>
-      {/* Modal: click backdrop to go back */}
-      {isModal && <div className="absolute inset-0" onClick={() => navigate(-1)} />}
-      {/* Content card */}
-      <main className={isModal
-        ? 'relative w-[520px] max-h-[90vh] rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col'
-        : 'flex-1 overflow-y-auto'
-      }>
-        <div className={isModal ? 'flex-1 overflow-y-auto' : ''}>
-        {/* Hero photo */}
-        <motion.div
-          className={`relative w-full shrink-0 ${isModal ? 'h-[240px]' : 'h-[50vh]'}`}
-          initial={{ y: -40, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.4, ease: 'easeOut' }}
+
+  const mainClass = useDesktopModal
+    ? 'relative w-[520px] max-h-[90vh] rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col'
+    : 'flex-1 overflow-y-auto'
+
+  const heroHeight = useDesktopModal ? 'h-[240px]' : 'h-[50vh]'
+
+  // ── Content (shared across all modes) ──
+  const content = (
+    <>
+      {/* Hero photo */}
+      <motion.div
+        className={`relative w-full shrink-0 ${heroHeight}`}
+        initial={{ y: -40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+      >
+        <img
+          src={item.image}
+          alt={item.name}
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+
+        <button
+          onClick={() => navigate(-1)}
+          className="absolute top-4 left-4 w-10 h-10 glass-badge rounded-full flex items-center justify-center"
         >
-          <img
-            src={item.image}
-            alt={item.name}
-            className="w-full h-full object-cover"
+          <ArrowLeft size={20} color="#fff" strokeWidth={2} />
+        </button>
+      </motion.div>
+
+      <p className="text-[10px] text-txt-tertiary text-center py-1.5">
+        Imagem meramente ilustrativa
+      </p>
+
+      {/* Content */}
+      <motion.div
+        className="px-4 pt-5 pb-6"
+        initial={{ y: 40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.4, delay: 0.1, ease: 'easeOut' }}
+      >
+        {category && (
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-pill text-xs font-medium bg-brand-subtle text-brand-text mb-3">
+            {CATEGORY_EMOJI[category.id] && (
+              <span>{CATEGORY_EMOJI[category.id]}</span>
+            )}
+            {category.name}
+          </span>
+        )}
+
+        <h1 className="font-display text-2xl font-bold text-txt-primary mb-2">
+          {item.name}
+        </h1>
+
+        <ExpandableDescription text={item.description} />
+
+        {isV1 && isMenuOnly && (
+          <div className="flex items-baseline gap-0.5 font-display mb-5">
+            <span className="text-xs font-semibold" style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}>R$</span>
+            <span className="text-2xl font-bold" style={{ color: 'var(--color-brand-700)' }}>{reais}</span>
+            <span className="text-sm" style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}>,{centavos}</span>
+          </div>
+        )}
+
+        {!(isV1 && isMenuOnly) && <div className="mb-2" />}
+
+        {hasCustomizations && (
+          <ProductCustomizer
+            groups={item.customizations!}
+            selections={selections}
+            onSelectionChange={handleSelectionChange}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+        )}
 
-          {/* Back button */}
-          <button
-            onClick={() => navigate(-1)}
-            className="absolute top-4 left-4 w-10 h-10 glass-badge rounded-full flex items-center justify-center"
-          >
-            <ArrowLeft size={20} color="#fff" strokeWidth={2} />
-          </button>
-        </motion.div>
+        {hasNutrition && !isV1 && (
+          <div className="bg-brand-subtle rounded-xl px-3 py-3 mb-4 grid grid-cols-4 gap-1 text-center">
+            {(Object.keys(NUTRITION_CONFIG) as (keyof typeof NUTRITION_CONFIG)[]).map((key) => {
+              const val = item.nutrition?.[key]
+              if (val == null) return null
+              const cfg = NUTRITION_CONFIG[key]
+              return (
+                <div key={key}>
+                  <p className="text-sm mb-0.5">{cfg.emoji}</p>
+                  <p className="text-base font-bold text-txt-primary">{val}</p>
+                  <p className="text-[10px] text-txt-tertiary">{cfg.unit} · {cfg.label}</p>
+                </div>
+              )
+            })}
+          </div>
+        )}
 
-        <p className="text-[10px] text-txt-tertiary text-center py-1.5">
-          Imagem meramente ilustrativa
-        </p>
-
-        {/* Content */}
-        <motion.div
-          className="px-4 pt-5 pb-6"
-          initial={{ y: 40, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.4, delay: 0.1, ease: 'easeOut' }}
-        >
-          {/* Category pill */}
-          {category && (
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-pill text-xs font-medium bg-brand-subtle text-brand-text mb-3">
-              {CATEGORY_EMOJI[category.id] && (
-                <span>{CATEGORY_EMOJI[category.id]}</span>
-              )}
-              {category.name}
-            </span>
-          )}
-
-          {/* Name */}
-          <h1 className="font-display text-2xl font-bold text-txt-primary mb-2">
-            {item.name}
-          </h1>
-
-          {/* Description with "Ver mais" */}
-          <ExpandableDescription text={item.description} />
-
-          {/* Inline price for vitrine v1 */}
-          {isV1 && isMenuOnly && (
-            <div className="flex items-baseline gap-0.5 font-display mb-5">
-              <span className="text-xs font-semibold" style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}>R$</span>
-              <span className="text-2xl font-bold" style={{ color: 'var(--color-brand-700)' }}>{reais}</span>
-              <span className="text-sm" style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}>,{centavos}</span>
-            </div>
-          )}
-
-          {!(isV1 && isMenuOnly) && <div className="mb-2" />}
-
-          {/* Customization steps */}
-          {hasCustomizations && (
-            <ProductCustomizer
-              groups={item.customizations!}
-              selections={selections}
-              onSelectionChange={handleSelectionChange}
-            />
-          )}
-
-          {/* Nutrition info */}
-          {hasNutrition && !isV1 && (
-            <div className="bg-brand-subtle rounded-xl px-3 py-3 mb-4 grid grid-cols-4 gap-1 text-center">
-              {(Object.keys(NUTRITION_CONFIG) as (keyof typeof NUTRITION_CONFIG)[]).map((key) => {
-                const val = item.nutrition?.[key]
-                if (val == null) return null
-                const cfg = NUTRITION_CONFIG[key]
+        {hasAllergens && !isV1 && (
+          <div className="mb-4">
+            <p className="text-xs font-semibold text-txt-secondary mb-2">⚠️ Alérgenos</p>
+            <div className="flex flex-wrap gap-2">
+              {item.allergens!.map((allergen) => {
+                const cfg = ALLERGEN_MAP[allergen] ?? DEFAULT_ALLERGEN
                 return (
-                  <div key={key}>
-                    <p className="text-sm mb-0.5">{cfg.emoji}</p>
-                    <p className="text-base font-bold text-txt-primary">{val}</p>
-                    <p className="text-[10px] text-txt-tertiary">{cfg.unit} · {cfg.label}</p>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-
-          {/* Allergens */}
-          {hasAllergens && !isV1 && (
-            <div className="mb-4">
-              <p className="text-xs font-semibold text-txt-secondary mb-2">⚠️ Alérgenos</p>
-              <div className="flex flex-wrap gap-2">
-                {item.allergens!.map((allergen) => {
-                  const cfg = ALLERGEN_MAP[allergen] ?? DEFAULT_ALLERGEN
-                  return (
-                    <span
-                      key={allergen}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-xs font-semibold border"
-                      style={{
-                        backgroundColor: cfg.bg,
-                        borderColor: cfg.border,
-                        color: cfg.text,
-                      }}
-                    >
-                      <span>{cfg.emoji}</span>
-                      {allergen}
-                    </span>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-        </motion.div>
-
-        {/* Related products */}
-        {relatedItems.length > 0 && (
-          <div className="pt-4 pb-6 bg-brand-subtle">
-            <h2 className="px-4 mb-3 text-base font-bold font-display" style={{ color: 'var(--color-brand-500)' }}>
-              Veja também
-            </h2>
-            <div className="flex overflow-x-auto no-scrollbar px-4 gap-3">
-              {relatedItems.map((related) => {
-                const [r, c] = formatPrice(related.price).split(',')
-                return (
-                  <button
-                    key={related.id}
-                    onClick={() => navigate(`/produto/${related.id}`)}
-                    className="shrink-0 w-36 text-left"
+                  <span
+                    key={allergen}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-xs font-semibold border"
+                    style={{
+                      backgroundColor: cfg.bg,
+                      borderColor: cfg.border,
+                      color: cfg.text,
+                    }}
                   >
-                    <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden mb-2">
-                      <img src={related.image} alt={related.name} className="w-full h-full object-cover" />
-                      {related.badge && (
-                        <span className="absolute top-1.5 left-1.5 glass-badge rounded-pill px-2 py-0.5 text-white text-[10px] font-semibold">
-                          {related.badge}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm font-bold text-txt-primary leading-snug line-clamp-2 mb-1">
-                      {related.name}
-                    </p>
-                    <div className="flex items-baseline gap-0.5 font-display">
-                      <span className="text-[10px] font-semibold" style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}>R$</span>
-                      <span className="text-base font-bold" style={{ color: 'var(--color-brand-700)' }}>{r}</span>
-                      <span className="text-xs" style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}>,{c}</span>
-                    </div>
-                  </button>
+                    <span>{cfg.emoji}</span>
+                    {allergen}
+                  </span>
                 )
               })}
             </div>
           </div>
         )}
-        </div>
+      </motion.div>
 
-        {/* Sticky footer */}
-        {!isMenuOnly && (
-        <div className="sticky bottom-0 z-50 bg-white border-t border-border px-4 pt-3 pb-5 md:px-6 md:py-4">
-          <div className="flex items-center justify-between gap-4">
-            {/* Price */}
-            <div className="flex items-baseline gap-0.5 font-display">
-              <span
-                className="text-xs font-semibold"
-                style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}
-              >
-                R$
-              </span>
-              <span className="text-2xl font-bold" style={{ color: 'var(--color-brand-700)' }}>
-                {reais}
-              </span>
-              <span
-                className="text-sm"
-                style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}
-              >
-                ,{centavos}
-              </span>
-            </div>
-
-            {/* Add button */}
-            <motion.button
-              whileTap={isDisabled ? undefined : { scale: 0.97 }}
-              disabled={isDisabled}
-              onClick={() => {
-                addItem(item, 1, hasCustomizations ? selections : undefined)
-                navigate(-1)
-              }}
-              className="flex-1 max-w-[220px] py-3 rounded-pill text-sm font-bold transition-opacity"
-              style={{
-                backgroundColor: brandFill,
-                color: buttonText,
-                opacity: isDisabled ? 0.4 : 1,
-              }}
-            >
-              {hasCustomizations
-                ? `Adicionar · R$ ${formatPrice(totalPrice)}`
-                : 'Adicionar'}
-            </motion.button>
+      {/* Related products */}
+      {relatedItems.length > 0 && (
+        <div className="pt-4 pb-6 bg-brand-subtle">
+          <h2 className="px-4 mb-3 text-base font-bold font-display" style={{ color: 'var(--color-brand-500)' }}>
+            Veja também
+          </h2>
+          <div className="flex overflow-x-auto no-scrollbar px-4 gap-3">
+            {relatedItems.map((related) => {
+              const [r, c] = formatPrice(related.price).split(',')
+              return (
+                <button
+                  key={related.id}
+                  onClick={() => navigate(`/produto/${related.id}`)}
+                  className="shrink-0 w-36 text-left"
+                >
+                  <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden mb-2">
+                    <img src={related.image} alt={related.name} className="w-full h-full object-cover" />
+                    {related.badge && (
+                      <span className="absolute top-1.5 left-1.5 glass-badge rounded-pill px-2 py-0.5 text-white text-[10px] font-semibold">
+                        {related.badge}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm font-bold text-txt-primary leading-snug line-clamp-2 mb-1">
+                    {related.name}
+                  </p>
+                  <div className="flex items-baseline gap-0.5 font-display">
+                    <span className="text-[10px] font-semibold" style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}>R$</span>
+                    <span className="text-base font-bold" style={{ color: 'var(--color-brand-700)' }}>{r}</span>
+                    <span className="text-xs" style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}>,{c}</span>
+                  </div>
+                </button>
+              )
+            })}
           </div>
         </div>
-        )}
-      </main>
+      )}
+    </>
+  )
 
+  // ── Sticky footer (shared) ──
+  const footer = !isMenuOnly && (
+    <div className="sticky bottom-0 z-50 bg-white border-t border-border px-4 pt-3 pb-5 md:px-6 md:py-4">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-baseline gap-0.5 font-display">
+          <span
+            className="text-xs font-semibold"
+            style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}
+          >
+            R$
+          </span>
+          <span className="text-2xl font-bold" style={{ color: 'var(--color-brand-700)' }}>
+            {reais}
+          </span>
+          <span
+            className="text-sm"
+            style={{ color: 'color-mix(in srgb, var(--color-brand-700) 55%, transparent)' }}
+          >
+            ,{centavos}
+          </span>
+        </div>
+
+        <motion.button
+          whileTap={isDisabled ? undefined : { scale: 0.97 }}
+          disabled={isDisabled || shrinking}
+          onClick={handleAdd}
+          className="flex-1 max-w-[220px] py-3 rounded-pill text-sm font-bold transition-opacity"
+          style={{
+            backgroundColor: brandFill,
+            color: buttonText,
+            opacity: isDisabled ? 0.4 : 1,
+          }}
+        >
+          {hasCustomizations
+            ? `Adicionar · R$ ${formatPrice(totalPrice)}`
+            : 'Adicionar'}
+        </motion.button>
+      </div>
+    </div>
+  )
+
+  // ── Render: mobile overlay with shrink animation ──
+  if (isMobileOverlay) {
+    return (
+      <motion.div
+        className={outerClass}
+        style={{
+          clipPath: `circle(${clipMaxR}px at ${clipCx}px ${clipCy}px)`,
+          overflow: 'hidden',
+        }}
+        animate={shrinking ? {
+          clipPath: `circle(24px at ${clipCx}px ${clipCy}px)`,
+          scale: 0.92,
+          opacity: 0.85,
+        } : {
+          scale: 1,
+          opacity: 1,
+        }}
+        transition={shrinking ? {
+          clipPath: { duration: 0.45, ease: [0.65, 0, 0.35, 1] },
+          scale: { duration: 0.3, ease: 'easeIn' },
+          opacity: { duration: 0.4, ease: 'easeIn' },
+        } : { duration: 0.2 }}
+        onAnimationComplete={handleShrinkComplete}
+      >
+        <main className="h-full overflow-y-auto bg-white">
+          {content}
+          {footer}
+        </main>
+      </motion.div>
+    )
+  }
+
+  // ── Render: desktop modal ──
+  if (useDesktopModal) {
+    return (
+      <div className={outerClass}>
+        <div className="absolute inset-0" onClick={() => navigate(-1)} />
+        <main className={mainClass}>
+          <div className="flex-1 overflow-y-auto">
+            {content}
+          </div>
+          {footer}
+        </main>
+      </div>
+    )
+  }
+
+  // ── Render: direct URL (no backgroundLocation) ──
+  return (
+    <div className={outerClass}>
+      <main className={mainClass}>
+        {content}
+        {footer}
+      </main>
     </div>
   )
 }
@@ -331,25 +403,21 @@ function ExpandableDescription({ text }: { text: string }) {
   const innerRef = useRef<HTMLDivElement>(null)
   const [height, setHeight] = useState<number | undefined>(undefined)
 
-  // Detect if text overflows 3 lines
   useEffect(() => {
     const el = clampRef.current
     if (el) setClamped(el.scrollHeight > el.clientHeight)
   }, [text])
 
-  // Measure full height for animation
   useEffect(() => {
     if (innerRef.current) {
       setHeight(innerRef.current.scrollHeight)
     }
   }, [text, expanded])
 
-  // 3-line collapsed height (line-height ~1.625 * 14px font * 3 lines)
   const collapsedH = clampRef.current?.clientHeight
 
   return (
     <div className="mb-3">
-      {/* Hidden measurer for clamp detection */}
       <p ref={clampRef} className="text-sm leading-relaxed line-clamp-3 absolute opacity-0 pointer-events-none" style={{ width: '100%' }}>
         {text}
       </p>
@@ -379,4 +447,3 @@ function ExpandableDescription({ text }: { text: string }) {
     </div>
   )
 }
-

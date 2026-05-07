@@ -52,8 +52,7 @@ export function SearchOverlay({ isOpen, onClose, onCategorySelect }: SearchOverl
 
   function handleItemTap(item: MenuItem) {
     onClose()
-    const isDesktop = window.innerWidth >= 768
-    navigate(`/produto/${item.id}`, isDesktop ? { state: { backgroundLocation: location } } : undefined)
+    navigate(`/produto/${item.id}`, { state: { backgroundLocation: location } })
   }
 
   function handleCategoryTap(id: string) {

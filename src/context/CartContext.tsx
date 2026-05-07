@@ -20,6 +20,8 @@ interface CartContextValue {
   setOpenCartAfterAdd: (v: boolean) => void
   lastAddedImage: string | null
   clearLastAdded: () => void
+  flyStartPosition: { x: number; y: number } | null
+  triggerFly: (image: string, startPos?: { x: number; y: number }) => void
 }
 
 const CartContext = createContext<CartContextValue | null>(null)
@@ -42,6 +44,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([])
   const [openCartAfterAdd, setOpenCartAfterAdd] = useState(false)
   const [lastAddedImage, setLastAddedImage] = useState<string | null>(null)
+  const [flyStartPosition, setFlyStartPosition] = useState<{ x: number; y: number } | null>(null)
 
   const addItem = useCallback(
     (item: MenuItem, quantity: number, customizations?: Record<string, string[]>) => {
@@ -54,7 +57,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
     []
   )
 
-  const clearLastAdded = useCallback(() => setLastAddedImage(null), [])
+  const clearLastAdded = useCallback(() => {
+    setLastAddedImage(null)
+    setFlyStartPosition(null)
+  }, [])
+
+  const triggerFly = useCallback((image: string, startPos?: { x: number; y: number }) => {
+    setLastAddedImage(image)
+    if (startPos) setFlyStartPosition(startPos)
+  }, [])
 
   const removeItem = useCallback((index: number) => {
     setCart((prev) => prev.filter((_, i) => i !== index))
@@ -82,7 +93,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ cart, addItem, removeItem, updateQuantity, clearCart, totalCents, itemCount, openCartAfterAdd, setOpenCartAfterAdd, lastAddedImage, clearLastAdded }}
+      value={{ cart, addItem, removeItem, updateQuantity, clearCart, totalCents, itemCount, openCartAfterAdd, setOpenCartAfterAdd, lastAddedImage, clearLastAdded, flyStartPosition, triggerFly }}
     >
       {children}
     </CartContext.Provider>

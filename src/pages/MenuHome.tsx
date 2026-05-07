@@ -26,7 +26,7 @@ const CAT_NAV_H = 44
 
 export function MenuHome() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const { totalCents, itemCount, openCartAfterAdd, setOpenCartAfterAdd, lastAddedImage, clearLastAdded } = useCart()
+  const { totalCents, itemCount, openCartAfterAdd, setOpenCartAfterAdd, lastAddedImage, clearLastAdded, flyStartPosition } = useCart()
   const { scale } = useBrand()
   const { isMultiVendor, journeyMode, isV1 } = useMock()
   const isMenuOnly = journeyMode === 'menuOnly'
@@ -97,13 +97,16 @@ export function MenuHome() {
 
   useEffect(() => {
     if (lastAddedImage) {
+      // When coming from shrink animation, start fly immediately (no gap)
+      // Otherwise delay slightly to let page transition settle
+      const delay = flyStartPosition ? 0 : 100
       const t = setTimeout(() => {
         setFlyingImage(lastAddedImage)
         clearLastAdded()
-      }, 100)
+      }, delay)
       return () => clearTimeout(t)
     }
-  }, [lastAddedImage, clearLastAdded])
+  }, [lastAddedImage, clearLastAdded, flyStartPosition])
 
   useEffect(() => {
     if (openCartAfterAdd) {

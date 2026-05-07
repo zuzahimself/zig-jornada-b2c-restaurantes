@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
+import { useCart } from '../context/CartContext'
 
 interface FlyingCartItemProps {
   image: string | null
@@ -18,7 +19,7 @@ function getTarget() {
   return { x: cx - 24, y: window.innerHeight - 60 }
 }
 
-function getStart() {
+function getDefaultStart() {
   const root = document.getElementById('root')
   const rootRect = root?.getBoundingClientRect()
   const cx = rootRect ? rootRect.left + rootRect.width / 2 : window.innerWidth / 2
@@ -26,9 +27,11 @@ function getStart() {
 }
 
 export function FlyingCartItem({ image, onComplete }: FlyingCartItemProps) {
+  const { flyStartPosition } = useCart()
+
   if (!image) return null
 
-  const start = getStart()
+  const start = flyStartPosition || getDefaultStart()
   const target = getTarget()
   const midX = (start.x + target.x) / 2 + 30
   const midY = Math.min(start.y, target.y) - 80

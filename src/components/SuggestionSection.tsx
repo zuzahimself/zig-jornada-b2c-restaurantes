@@ -7,8 +7,6 @@ interface SuggestionSectionProps {
   items: MenuItem[]
 }
 
-const isDesktop = () => typeof window !== 'undefined' && window.innerWidth >= 768
-
 export function SuggestionSection({ items }: SuggestionSectionProps) {
   const location = useLocation()
   return (
@@ -19,7 +17,7 @@ export function SuggestionSection({ items }: SuggestionSectionProps) {
 
       <div className="flex overflow-x-auto no-scrollbar px-4 gap-3 pb-1">
         {items.map((item) => (
-          <Link key={item.id} to={`/produto/${item.id}`} state={isDesktop() ? { backgroundLocation: location } : undefined}>
+          <Link key={item.id} to={`/produto/${item.id}`} state={{ backgroundLocation: location }}>
             <SuggestionCard item={item} />
           </Link>
         ))}
